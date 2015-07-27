@@ -31,29 +31,30 @@ var init = function (){
 	divs = $("li>div:first-child");
 	num = divs.size();
 
-	/* Action : Add id to every item for easy Navigation */
+	/*0. Scrollable: to support scroll action : Add id to every item for easy Navigation */
 	for (  i = 0; i<num; i++){
 		divs.eq(i).attr('id','item'.concat(i));
 	}
 
-	/* 0. Highlight target : set 1st HL target */
+	/* init 1st HL target */
 	var firstHL = divs.eq(index);
 	firstHL.addClass('highlight');
 
-	/* 1. shrink & expand : add div for recording oneLineH height & init every item*/
+	/*1. Expand & Shrink : add div for recording oneLineH height & init every item*/
 	divs.each(function() {
 		$(this).after('<div style="height:0;width:0;margin-bottom: 0px;"><p>oneline</p> </div>');
 		setHL($(this),'one-line');
 	});
-	// setHL(firstHL,"full");
-	initHLB(firstHL, setHL(firstHL,"full"));
+	/*3. Static Highilght Background :  init .hlBackground position, width, height*/
+	initHLB(firstHL, setHL(firstHL,"full")); // setHL(firstHL,"full");
 	
-	/* 2. Show & Hide : init every item */
+	/*2. Show & Hide : init every item */
 	$('.contentDiv li>ol, .contentDiv li>ul').hide();
 
 };
 
 var specificOrganizeBODY = function(){
+	/* Init relateDiv, fill it, & inset into DOM*/
 	// 0.0 init RelateDiv
 	var relateDiv = $("<div/>", {class: "relateDiv"});
 	relateDiv.css('left', root.outerWidth(true)+10);
@@ -346,7 +347,7 @@ var main = function(){
 				break;
 		}; // END -- switch
 		
-		triggerAnimate(unit,'key');//var revise = 
+		triggerAnimate(unit,'key');
 		index += unit;
 
 		// return false; // disable scroll via arrow key
@@ -359,7 +360,7 @@ var main = function(){
 		unit = expandID-index;
 		// console.log(expandID, unit);
 
-		triggerAnimate(unit,'click');//var revise = 
+		triggerAnimate(unit,'click');
 		index += unit;
 	});
 
