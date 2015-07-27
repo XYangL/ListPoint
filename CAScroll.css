@@ -20,13 +20,15 @@ body {
 
 /*Basic Style*/
 div.contentDiv{
-	border: solid 2px;
+	/*border: solid 2px;*/
 	max-width: 1024px;
+	overflow-y:hidden;
 }
 
-.contentDiv ul,.contentDiv sol{
+.contentDiv ul,.contentDiv ol{
 	list-style-position: inside;
 	padding-left: 15px;
+	padding-right: 15px;
 	width:98%;
 	border-radius:10px;
 
@@ -97,11 +99,10 @@ div.contentDiv{
 	background:#5bc0de;
 	border-radius:5px;
 	
-	position:absolute;
+	position:fixed;
 
 	transition: height 1s, left 1s, width 1s;
 	z-index: -1;
-	width:100%;
 }
 
 
@@ -136,18 +137,17 @@ div.contentDiv{
 	opacity: 0.75;
 }*/
 
-.contentDiv img{
-	width: 60vh;
+.relateDiv img{
+	width: 50vh;
 }
-
 /*Styles for div.relateDiv*/
 .relateDiv{
 	border: 2px dashed red;
 	display: none;
-	float: right;
-	margin-left: 10px;
+	/*float: right;*/
+	/*margin-left:10px;*/
 	max-width:50vh;
-	/*transition: width 1s;*/
+	position:absolute;
 }
 
 .relateDiv >ul{

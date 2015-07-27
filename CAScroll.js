@@ -1,13 +1,18 @@
 var root = null;
 var divs = null;
+var num = 0;
 var index = 0;
 var targetTop = 0;
 
+var HLBack = null;
+
 var init = function (){
+	root = $('div.contentDiv');
+	
 	specificOrganizeBODY();
 
 	// !!Important for makeing div scrollable
-	root.css('overflow', 'scroll');
+	// root.css('overflow', 'scroll');
 
 	root.height('90vh');
 	root.width('98wh');
@@ -15,27 +20,84 @@ var init = function (){
 	root.prepend('<p id="preDiv"> </p>');
 	root.append('<p id="postDiv"> </p>');
 	
-	$('#preDiv').height("20vh");
-	$('#postDiv').height("70vh");
+	$('#preDiv').height("35vh");
+	$('#postDiv').height("45vh");
+
+	/* Add div.hlBackground to highlight in Blue */
+	HLBack = $('<div class="hlBackground"></div>');
+	// HLBack = $('.hlBackground'); 
+	root.append(HLBack);
+
+	divs = $("li>div:first-child");
+	num = divs.size();
+
+	/* Action : Add id to every item for easy Navigation */
+	for (  i = 0; i<num; i++){
+		divs.eq(i).attr('id','item'.concat(i));
+	}
+
+	/* 0. Highlight target : set 1st HL target */
+	var firstHL = divs.eq(index);
+	firstHL.addClass('highlight');
+
+	/* 1. shrink & expand : add div for recording oneLineH height & init every item*/
+	divs.each(function() {
+		$(this).after('<div style="height:0;width:0;margin-bottom: 0px;"><p>oneline</p> </div>');
+		setHL($(this),'one-line');
+	});
+	// setHL(firstHL,"full");
+	initHLB(firstHL, setHL(firstHL,"full"));
+	
+	/* 2. Show & Hide : init every item */
+	$('.contentDiv li>ol, .contentDiv li>ul').hide();
 
 };
 
 var specificOrganizeBODY = function(){
-	// 0.1 Get Footnote
+	// 0.0 init RelateDiv
+	var relateDiv = $("<div/>", {class: "relateDiv"});
+	relateDiv.css('left', root.outerWidth(true)+10);
+	relateDiv.css('top', 10);
+	relateDiv.append( $('<ul/>'));
+
+	// 0.1 Get Footnote & Replace
+	$('.footnote-ref').text('');
 	var FN = $('div.footnotes');//console.log(FN.size());
 	FN.remove();
-	
-	// 0.2 Set RelateDiv
-	$('.footnote-ref').text('');
-	var relateDiv = $("<div/>", {class: "relateDiv"});
-	relateDiv.append( $('<ul/>'));
 	FN.find('ol>li').each(function(){
 		$(this).find('.footnote-backref').parent().remove();
 		relateDiv.children(':first').append($(this));
 	});
 
-	//0.3 Add RelateDiv to body
-	relateDiv.insertBefore(root);
+	// 0.2 Get Img & Replace
+	var IMG = $('.contentDiv li>div>p>img')
+	/* Add shrink description for img*/
+	
+	IMG.each(function(index, value) {
+		var imgParentDiv = $(this).parent().parent();
+		var level = imgParentDiv.parent().parent().attr('class');
+		level = 'L_'.concat(parseInt(level.substr(-1))+1);
+		
+		var linkSUP = '<sup id=""><a href="#IMG:NO" class="footnote-ref"></a></sup>'.replace("NO", index);
+		var desUL = imgParentDiv.parent().next().find('div>ul');
+		if (desUL.size()>0) {
+			desUL = desUL.eq(0);
+			desUL.addClass(level);
+			desUL.children().append(linkSUP);
+			desUL.children().wrapInner('<p></p>');
+			desUL.children().wrapInner('<div></div>');
+			desUL.parent().parent().remove();// li
+			desUL.insertAfter(imgParentDiv);
+		};
+
+		$(this).parent().html($(this).attr('alt')+ " <b>[img]</b>"	+  linkSUP );
+		$(this).remove();
+		var temp = $('<li/>',{id: 'IMG:NO'.replace("NO", index) }).append($(this));
+		relateDiv.children(':first').append(temp);		
+	});
+
+	// 0.3 Add RelateDiv to body
+	relateDiv.insertAfter(root);
 
 	/* convert ol>li to div+ol>li>div:first-child */
 	ol = root.find('ol');
@@ -57,18 +119,30 @@ var specificOrganizeBODY = function(){
 	/* wrap title = ul>li>div:first-child with <p> */
 	var firstTitle = root.find('ul>li>div:first-child').first();
 	firstTitle.html("".concat("<p>",firstTitle.html(),"</p>"));
-	
-	var titles = root.find('ul').prev('div');
-	for (var i = titles.size() - 1; i >= 0; i--) {
-		titles.eq(i).html("".concat("<p>",titles.eq(i).html(),"</p>"));
-	};
 
-	/* Add shrink description for img*/
-	$('li>div>p>img').parent().each(function() { //$this = div>p
-		var img = $(this).html();// img
-		$(this).html($(this).children(':first').attr('alt')+ " <b>[img]</b>");
-		$(this).after(img); //console.log($(this).parent().html(),'\n');
+	root.find('li>div~ul').parent().children(':first-child').each(function(index, el) {// div
+		if($(this).has('p:first-child').size()==0){
+			$(this).wrapInner('<p/>'); //console.log($(this).html());
+		}		
 	});
+}
+
+var initHLB = function(base, temp){
+	HLBack.css(base.position());// Only set Top when init, and then keep it without change
+	// HLBack.css("top",base.position().top);
+	var borderTemp = base.outerHeight()-base.height();
+	HLBack.height(temp+borderTemp);
+	HLBack.width(base.outerWidth());
+}
+
+var updateHLB = function(base, temp){
+	// HLBack.css(base.position());
+	HLBack.css("left",base.position().left);
+
+	// HLBack.height(base.outerHeight());
+	var borderTemp = base.outerHeight()-base.height();
+	HLBack.height(temp+borderTemp);
+	HLBack.width(base.outerWidth());
 }
 
 var setHL = function(object, mode){
@@ -78,7 +152,6 @@ var setHL = function(object, mode){
 	/* shrink, NOT highlight */
 		/*---v4-6--new one-line height-------*/
 		temp = object.next().children().outerHeight();
-
 	} else if (mode === "full") {
 	/* expand, IS highlight */
 		if(object.children().first().attr('class')=="MathJax_Preview"){
@@ -91,13 +164,6 @@ var setHL = function(object, mode){
 				temp += parseInt( $(this).css("padding-bottom").replace("px", ""));
 			});
 		}
-
-		/*---v3---.hlBackground-------*/
-		var borderTemp = object.outerHeight()-object.height();
-		var HLBack = $('.hlBackground'); 
-		HLBack.height(temp+borderTemp);
-		// HLBack.width(object.width());
-	
 	}
 
 	object.height(temp);	
@@ -128,13 +194,43 @@ var triggerAnimate = function(unit,mode){
 	expand.addClass('highlight');
 
 	/* 1. shrink & expand : via resetting height */
-	var oneLine = setHL(shrink, "one-line");
-	setHL(expand, "full");
+	var oneLineH = setHL(shrink, "one-line");
+	var fullH = setHL(expand, "full");
+
+	/* 0. Highlight target : update position & width & height */
+	// var HLBack = $('.hlBackground');
+	updateHLB(expand, fullH);
+
+	/* 0.0  Show User Defined Relationship*/
+	var relateLI = expand.find('sup>a.footnote-ref');
+	if (relateLI.size() ==0) {
+		console.log('NO Related Info!');
+		// $('.relateDiv').hide('slow', function(){
+		// 	$('.hlBackground').width(expand.width());
+		// 	$('.hlBackground').css("left",expand.position().left);
+		// });
+	$('.relateDiv').effect('slide', { direction: 'left', mode: 'hide' }, 'slow');
+		// $('.relateDiv').hide('slow');
+		// $('.hlSupport').removeClass('hlSupport');
+	} else {
+		// console.log('Get Related :', $(this).attr('href'));
+		$('.hlSupport').removeClass('hlSupport');
+		relateLI.each(function() {
+			$($(this).attr('href').replace(':', '\\:')).addClass('hlSupport');
+		});
+		// $('.relateDiv').css("margin-top",shrinkTop+fullH/2-$('.relateDiv').height()/2);
+		var st = shrinkTop + fullH/2.0-$('.relateDiv').outerHeight()/2.0 ;
+
+		$('.relateDiv').animate({top: st}, 'slow');
+		// $('.relateDiv').css('margin-top',st);
+		// $('.relateDiv').show('slow');
+		$('.relateDiv').effect('slide', { direction: 'left', mode: 'show' }, 'slow');
+	}	
 
 	/* 2. Show & Hide on the related items : based on the unit */
 	var slideUpHeight = 0;  var slideDownHeight = 0;
 	if(unit > 0){ // NEXT
-		slideUpHeight += shrinkOldHeight-oneLine;
+		slideUpHeight += shrinkOldHeight-oneLineH;
 
 		// -1- show the detailed of expand
 		expand.nextAll('ol,ul').slideDown('slow');//ol
@@ -184,34 +280,6 @@ var triggerAnimate = function(unit,mode){
 	targetTop += revise;
 	root.animate({scrollTop:targetTop},'slow');
 
-	/* 0.0  Show User Defined Relationship*/
-	// $('.hlSupport').removeClass('hlSupport');
-	var relateLI = expand.find('sup>a.footnote-ref');
-	if (relateLI.size() ==0) {
-		console.log('NO Related Info!');
-		$('.relateDiv').hide('slow', function(){
-			// $('.hlBackground').width(expand.width());
-			// $('.hlBackground').css("left",expand.position().left);
-		});
-		// $('.relateDiv').hide('slow');
-		$('.hlSupport').removeClass('hlSupport');
-	} else {
-		console.log('Get Related :', $(this).attr('href'));
-		$('.hlSupport').removeClass('hlSupport');
-		relateLI.each(function() {
-			$($(this).attr('href').replace(':', '\\:')).addClass('hlSupport');
-		});
-		$('.relateDiv').show('slow',function(){
-			// $('.hlBackground').width(expand.width());
-			// $('.hlBackground').css("left",expand.position().left);
-		});
-		// $('.relateDiv').show('slow');
-	}
-
-	/* 0. Highlight target : update position */
-	var HLBack = $('.hlBackground');
-	HLBack.css("left",expand.position().left);
-
 	/* 4. Background : on related items */
 	$('.HLChildLevel').removeClass('HLChildLevel');
 	expand.nextAll('ol,ul').addClass('HLChildLevel');//ol
@@ -228,40 +296,8 @@ var triggerAnimate = function(unit,mode){
 
 
 var main = function(){
-	root = $('div.contentDiv');
-
 	/* Reorganize & make it scroll*/
 	init();
-
-	divs = $("li>div:first-child");
-	var num = divs.size();
-
-	/* Action : Add id to every item for easy Navigation */
-	for (  i = 0; i<num; i++){
-		divs.eq(i).attr('id','item'.concat(i));
-	}
-
-	/* 0. Highlight target : set 1st HL target */
-	var firstHL = divs.eq(index);
-	firstHL.addClass('highlight');
-	
-	/* 0. Highlight target : init 1st HL position */
-	// root.parent().append('<div class="hlBackground"></div>')
-	root.append('<div class="hlBackground"></div>');
-	var HLBack = $('.hlBackground');
-	HLBack.css(firstHL.position());	
-	// HLBack.css("top",firstHL.position().top);
-	// HLBack.width(root.width());
-
-	/* 1. shrink & expand : add div for recording oneLine height & init every item*/
-	divs.each(function() {
-		$(this).after('<div style="height:0;width:0;margin-bottom: 0px;"><p>oneline</p> </div>');
-		setHL($(this),'one-line');
-	});
-	setHL(firstHL,"full");
-	
-	/* 2. Show & Hide : init every item */
-	$('.contentDiv li>ol, .contentDiv li>ul').hide();
 
 	/*---v4-8--Scrollable Highlight-------*/
 	// $(window).bind('mousewheel DOMMouseScroll', function(event){
@@ -330,17 +366,3 @@ var main = function(){
 };
 
 $(document).ready(main);
-// $(document).click(function(event) {
-// 	$('.footnotes').toggle('slow');
-// 	// $('.hlBackground').css("left",$('.highlight').position().left);
-// 	// HLBack.css(firstHL.position());	
-// });
-// window.onload = function (){
-// 	$('li>div>p span.MJXc-math').each(function() {
-// 		// if ($(this).parent().parent().html().match('^<span class="MathJax_Preview"')) {
-// 			console.log('Match:',$(this).parent().parent().parent().parent().html());
-// 			console.log('Next:',$(this).parent().parent().parent().parent().next().html());
-// 		// };
-// 	});
-// 	console.log('window.onload: ',$('li>div>p span.MJXc-display').size());
-// };

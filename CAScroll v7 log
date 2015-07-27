@@ -13,3 +13,39 @@ specificOrganizeBODY() in CAScroll.js
 triggerAnimate() in CAScroll.js
 - add animation to show/hide .relateDiv
 - update animation of .hlBackground
+
+
+
+7.1
+======
+Reorganize Functions in CAScroll.js
+- add global num =  divs.size() = $("li>div:first-child").size()
+- add global HLBack
+- extract init and reset of .hlBackground to initHLB() & setHLB()
+- change the way to process title-item for ul
+
+- move all init work including initing root from main() to init()
+ * In init(), should init root & call specificOrganizeBODY() first, and then do other inits
+ * in main(), first should call init(), and then all others are Event Listeners
+
+- move setting of .relateDiv & update HLBack from 'after animate:scrollTop' to 'after reset Height'
+- setHL(shrink & expand) -> updateHLB(expand) -> hide/show .relateDiv
+
+
+Change the position and effect to show/hide .relateDiv in CAScroll.js
+- Add init on position of .relateDiv
+- Update process on <img> to show it in .relateDiv
+- Using jQuery-ui to support the effect of hide/show in triggerAnimate()
+
+- Should include following in the head of present.html:
+ <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript"></script>
+
+
+CAScroll.css
+- move setting of .contentDiv{overflow} from js to css
+- revert .hlBackground {position:absolute, width:100%} to {postion:fixed}
+- limit size of .relateDiv img
+- update styles for .relateDiv for supporting new effect to hide/show
+
+
+
