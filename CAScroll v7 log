@@ -1,0 +1,15 @@
+7.0
+======
+CASCroll.css:
+- add .contentDiv to some original selector
+- change .hlBackground {postion:fixed} to {position:absolute, width:100%}
+- add styles for .relateDiv
+
+specificOrganizeBODY() in CAScroll.js
+- add .relateDiv to DOM via js 
+- remove footnote to relateDiv via js
+- add process of <img>
+
+triggerAnimate() in CAScroll.js
+- add animation to show/hide .relateDiv
+- update animation of .hlBackground

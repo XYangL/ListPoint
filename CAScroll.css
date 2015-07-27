@@ -20,12 +20,11 @@ body {
 
 /*Basic Style*/
 div.contentDiv{
-	border-style: solid;
-	border-width: 2px;
+	border: solid 2px;
 	max-width: 1024px;
 }
 
-ul,ol{
+.contentDiv ul,.contentDiv sol{
 	list-style-position: inside;
 	padding-left: 15px;
 	width:98%;
@@ -45,7 +44,7 @@ ul,ol{
 
 
 /*1. Expand & Shrink*/
-li >div
+.contentDiv li >div
 {
 
 	padding-left : 5px;
@@ -62,7 +61,7 @@ li >div
 	text-overflow:ellipsis;
 
 }
-li >div.highlight
+.contentDiv li >div.highlight
 {
 	/*opacity: 0.5;*/
 	/*background:#f0ad4e;*/
@@ -73,7 +72,7 @@ li >div.highlight
 }
 
 
-li >div >* {
+.contentDiv li >div >* {
 
 	white-space:inherit;
 	overflow:inherit;
@@ -84,7 +83,7 @@ li >div >* {
 
 }
 
-.L_4 >li >div >*{
+.contentDiv .L_4 >li >div >*{
 	padding-top: 0px;
 	padding-bottom: 0px;
 }
@@ -97,11 +96,12 @@ li >div >* {
 .hlBackground {
 	background:#5bc0de;
 	border-radius:5px;
-
-	position:fixed;
+	
+	position:absolute;
 
 	transition: height 1s, left 1s, width 1s;
 	z-index: -1;
+	width:100%;
 }
 
 
@@ -113,21 +113,21 @@ li >div >* {
 
 
 /*5. Opacity*/
-li>ul >li>div, li>ol >li>div{
+.contentDiv li>ul >li>div, .contentDiv li>ol >li>div{
 	opacity:0.5;
 }
-li>ul >li>div.highlight, li>ol >li>div.highlight{
+.contentDiv li>ul >li>div.highlight, .contentDiv li>ol >li>div.highlight{
 	opacity:1;
 }
-.highlight+ol >li>div, .highlight+ul >li>div{
+.contentDiv .highlight+ol >li>div, .contentDiv .highlight+ul >li>div{
 	opacity:1;
 }
 
-li > .HLSameLevel >*{
+.contentDiv li > .HLSameLevel >*{
 	background: rgba(247,247,249,0.2);/*#f7f7f9;*/
 }
 
-li > ol.HLChildLevel, li > ul.HLChildLevel{
+.contentDiv li > ol.HLChildLevel, .contentDiv li > ul.HLChildLevel{
 	/*border-color: #e1e1e8;*/
 	background: rgb(247,247,249);
 }
@@ -135,5 +135,28 @@ li > ol.HLChildLevel, li > ul.HLChildLevel{
 /*.HLChildLevel >li >div{
 	opacity: 0.75;
 }*/
+
+.contentDiv img{
+	width: 60vh;
+}
+
+/*Styles for div.relateDiv*/
+.relateDiv{
+	border: 2px dashed red;
+	display: none;
+	float: right;
+	margin-left: 10px;
+	max-width:50vh;
+	/*transition: width 1s;*/
+}
+
+.relateDiv >ul{
+	list-style-type: none;
+	 padding: 0px;
+}
+.relateDiv >ul>li:not(.hlSupport){
+	display: none;
+}
+
 
 

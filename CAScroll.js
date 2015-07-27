@@ -21,6 +21,22 @@ var init = function (){
 };
 
 var specificOrganizeBODY = function(){
+	// 0.1 Get Footnote
+	var FN = $('div.footnotes');//console.log(FN.size());
+	FN.remove();
+	
+	// 0.2 Set RelateDiv
+	$('.footnote-ref').text('');
+	var relateDiv = $("<div/>", {class: "relateDiv"});
+	relateDiv.append( $('<ul/>'));
+	FN.find('ol>li').each(function(){
+		$(this).find('.footnote-backref').parent().remove();
+		relateDiv.children(':first').append($(this));
+	});
+
+	//0.3 Add RelateDiv to body
+	relateDiv.insertBefore(root);
+
 	/* convert ol>li to div+ol>li>div:first-child */
 	ol = root.find('ol');
 	ol.children().wrapInner("<div></div>");
@@ -47,6 +63,12 @@ var specificOrganizeBODY = function(){
 		titles.eq(i).html("".concat("<p>",titles.eq(i).html(),"</p>"));
 	};
 
+	/* Add shrink description for img*/
+	$('li>div>p>img').parent().each(function() { //$this = div>p
+		var img = $(this).html();// img
+		$(this).html($(this).children(':first').attr('alt')+ " <b>[img]</b>");
+		$(this).after(img); //console.log($(this).parent().html(),'\n');
+	});
 }
 
 var setHL = function(object, mode){
@@ -74,7 +96,7 @@ var setHL = function(object, mode){
 		var borderTemp = object.outerHeight()-object.height();
 		var HLBack = $('.hlBackground'); 
 		HLBack.height(temp+borderTemp);
-		HLBack.width(object.outerWidth(true));
+		// HLBack.width(object.width());
 	
 	}
 
@@ -162,6 +184,30 @@ var triggerAnimate = function(unit,mode){
 	targetTop += revise;
 	root.animate({scrollTop:targetTop},'slow');
 
+	/* 0.0  Show User Defined Relationship*/
+	// $('.hlSupport').removeClass('hlSupport');
+	var relateLI = expand.find('sup>a.footnote-ref');
+	if (relateLI.size() ==0) {
+		console.log('NO Related Info!');
+		$('.relateDiv').hide('slow', function(){
+			// $('.hlBackground').width(expand.width());
+			// $('.hlBackground').css("left",expand.position().left);
+		});
+		// $('.relateDiv').hide('slow');
+		$('.hlSupport').removeClass('hlSupport');
+	} else {
+		console.log('Get Related :', $(this).attr('href'));
+		$('.hlSupport').removeClass('hlSupport');
+		relateLI.each(function() {
+			$($(this).attr('href').replace(':', '\\:')).addClass('hlSupport');
+		});
+		$('.relateDiv').show('slow',function(){
+			// $('.hlBackground').width(expand.width());
+			// $('.hlBackground').css("left",expand.position().left);
+		});
+		// $('.relateDiv').show('slow');
+	}
+
 	/* 0. Highlight target : update position */
 	var HLBack = $('.hlBackground');
 	HLBack.css("left",expand.position().left);
@@ -200,9 +246,12 @@ var main = function(){
 	firstHL.addClass('highlight');
 	
 	/* 0. Highlight target : init 1st HL position */
-	root.parent().append('<div class="hlBackground"></div>')
+	// root.parent().append('<div class="hlBackground"></div>')
+	root.append('<div class="hlBackground"></div>');
 	var HLBack = $('.hlBackground');
 	HLBack.css(firstHL.position());	
+	// HLBack.css("top",firstHL.position().top);
+	// HLBack.width(root.width());
 
 	/* 1. shrink & expand : add div for recording oneLine height & init every item*/
 	divs.each(function() {
@@ -212,7 +261,7 @@ var main = function(){
 	setHL(firstHL,"full");
 	
 	/* 2. Show & Hide : init every item */
-	$('li>ol, li>ul').hide();
+	$('.contentDiv li>ol, .contentDiv li>ul').hide();
 
 	/*---v4-8--Scrollable Highlight-------*/
 	// $(window).bind('mousewheel DOMMouseScroll', function(event){
@@ -225,6 +274,7 @@ var main = function(){
 		var unit = 0;	
 		switch(parseInt(key.which,10)) {
 			case 37:// Left : -1 | <-1
+				event.preventDefault();
 				if (index>0){
 					var expand = divs.eq(index-1);
 					if(expand.parent().parent().css('display') != 'none'){
@@ -237,6 +287,7 @@ var main = function(){
 				}
 				break;
 			case 38:// Up : <0
+				event.preventDefault();
 				var shrinkParent = divs.eq(index).parents('li').eq(1).children(':first-child');
 				if (shrinkParent.size() ==1) {
 					var expandID = parseInt(shrinkParent.attr('id').replace("item", ""));
@@ -244,11 +295,13 @@ var main = function(){
 				};
 				break;
 			case 39: // Right : +1
+				event.preventDefault();
 				if (index+1<num){
 					unit = 1;
 				}				
 				break;
 			case 40:// Down : >0 	
+				event.preventDefault();
 				var childrenSize = divs.eq(index).siblings('ul,ol').find('li>div:first-child').size();
 				unit = 1 + childrenSize;
 				if (index+unit > num-1) {
@@ -260,7 +313,7 @@ var main = function(){
 		triggerAnimate(unit,'key');//var revise = 
 		index += unit;
 
-		return false; // disable scroll via arrow key
+		// return false; // disable scroll via arrow key
 	});
 
 	// /* Action :  Relate the action to click */
@@ -277,3 +330,17 @@ var main = function(){
 };
 
 $(document).ready(main);
+// $(document).click(function(event) {
+// 	$('.footnotes').toggle('slow');
+// 	// $('.hlBackground').css("left",$('.highlight').position().left);
+// 	// HLBack.css(firstHL.position());	
+// });
+// window.onload = function (){
+// 	$('li>div>p span.MJXc-math').each(function() {
+// 		// if ($(this).parent().parent().html().match('^<span class="MathJax_Preview"')) {
+// 			console.log('Match:',$(this).parent().parent().parent().parent().html());
+// 			console.log('Next:',$(this).parent().parent().parent().parent().next().html());
+// 		// };
+// 	});
+// 	console.log('window.onload: ',$('li>div>p span.MJXc-display').size());
+// };
