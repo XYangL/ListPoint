@@ -1,3 +1,72 @@
+7.1.4
+======
+New DOM structure to support fixed .contentDiv width with scroll its offset().left to show .relateDiv (workable, but with multi problems)
+
+
+Further reorganize init()
+- move setting overflow & height & width for .contentDiv from .js to .css
+- move adding #preDiv & #PostDiv with height to specificOrganizeBODY()
+- move initing and adding .hlBackground to initHLB()
+- update & clarify the sequence of init process for different animate
+/*1. Expand & Shrink*/ -> /*2. Show & Hide*/ -> initWrap() -> init 1st HL -> initHLB() -> initRDiv()
+
+
+specificOrganizeBODY() in CAScroll.js : 
+* revision on the elements of DOM are all here
+* Update the DOM structure to .container > (.contentWrap >(.contentDiv +.hlBackground) + .relatedDiv)
+- add div.container & div.contentWrap
+(- add #preDiv & #PostDiv)
+(- add .hlBackground)
+- extract the function of get&replace Footnote & img to fillRelateDiv(relateDiv)
+- update way to init .relateDiv, fill it, and inset it into DOM*/
+(- keep other original special requirement of CAScroll on DOM structure)
+
+
+initHLB() & updatHLB() in CAScroll.js
+* top of .hlBackground is invariable after init
+- In initHLB(), call updateHLB() to init left, height, width
+
+
+triggerAnimate() in CAScroll.js
+- Call the animate to update left of .contentWrap at the end
+- !! decide show/hide .relateDiv and updateHLB() after finishing update on left
+- !! Call animate to scrollTop after finishing update on left
+- deleting/updating unused space, settings and comments
+
+
+Other:
+- Add global variable relateDiv and initLeft
+- Add initWrap()
+- Add initRDiv(), updateRDiv(), hideRDiv(), showRDiv()
+- Rename setHL() to setHeight()
+
+
+CAScroll.css
+- Update Setting sequence
+- Delete unused space or settings
+- move setting height & width for .contentDiv from .js to .css
+To support new DOM Structure
+- change position of .hlBackground from fixed to absolute
+- limit the width of .relateDiv-img from 50vh to 100% (of .relateDiv)
+- Extract the styles related to positions for .relateDiv & its children, and update
+- Append the styles realted to position for .contentWrap, .contentDiv, .hlBackground
+
+
+To-Do: Clarify the sequence of animate
+[NO] Check if there is .relatedDiv of expand before all there other 
+     * if has, change .hlSupport to target;
+     * since .relateDiv[display=none] & .hlSupport[display !=none], 
+     * target is NOT visible, while we can get its width correct
+     * relateDiv.outerWidth(true) = 62 + target.outerWidth()
+       = relateDiv(margin:15*2  + boder:2 + margin:2 ) + relateDiv.width(ul.margin:14*2 + target.outerWidth)
+     * reviseLeft = - relateDiv.outerWidth(true)/2   
+[NO] When there is .relatedDiv for Expand:
+     First: revise .contentDiv.parent() .left 
+     then, after 1st finish, scroll .highlight to correct position
+     at the same time, show the .relateDiv
+
+
+
 7.1.2
 ======
 - CAScroll.css: Copy styles of Bootstrap.popover to .relateDiv
