@@ -1,0 +1,139 @@
+/*Reset User Agent Style*/
+ p, pre, ul, ol{
+	margin: 0;
+}
+
+/*Copied from Bootstrap*/
+html {
+  font-family: sans-serif;
+  -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;/*1.42857143*/;
+  color: #333;
+  background-color: #fff;
+}
+
+/*Basic Style*/
+div.contentDiv{
+	border-style: solid;
+	border-width: 2px;
+	max-width: 1024px;
+}
+
+ul,ol{
+	list-style-position: inside;
+	padding-left: 15px;
+	width:98%;
+	border-radius:10px;
+
+}
+
+.L_1 { font-size:200%;	font-weight:500;}
+
+.L_2 { font-size:85%;	/*font-weight:400;*/}
+
+.L_3 { font-size:85%;	font-weight:400;}
+
+.L_4 { font-size:90%;	font-weight:400;}
+
+.L_5 { font-size:90%;	font-weight:300;}
+
+
+/*1. Expand & Shrink*/
+li >div
+{
+
+	padding-left : 5px;
+	padding-right: 5px;
+
+	margin-bottom: 7px;/*5*/
+	border-radius:10px;
+
+	height: 1em;
+	transition: height 1s, opacity 1s;
+
+	white-space:nowrap;
+	overflow:hidden; /*!! */
+	text-overflow:ellipsis;
+
+}
+li >div.highlight
+{
+	/*opacity: 0.5;*/
+	/*background:#f0ad4e;*/
+	white-space:normal;
+	/*overflow:hidden;*/
+	/*text-overflow:ellipsis;*/
+	
+}
+
+
+li >div >* {
+
+	white-space:inherit;
+	overflow:inherit;
+	text-overflow:inherit;
+
+	padding-top: 6px;/*5*/
+	padding-bottom: 11px;/*5*/
+
+}
+
+.L_4 >li >div >*{
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+/*2. Show & Hide : Default*/
+
+
+/*3. HL Posiition*/
+/* v3 Static Highilght Background*/
+.hlBackground {
+	background:#5bc0de;
+	border-radius:5px;
+
+	position:fixed;
+
+	transition: height 1s, left 1s, width 1s;
+	z-index: -1;
+}
+
+
+/*4. background & border*/
+/*li>ol, li>ul {
+	border: 10px solid transparent;
+	transition: border-width 1s;
+}*/
+
+
+/*5. Opacity*/
+li>ul >li>div, li>ol >li>div{
+	opacity:0.5;
+}
+li>ul >li>div.highlight, li>ol >li>div.highlight{
+	opacity:1;
+}
+.highlight+ol >li>div, .highlight+ul >li>div{
+	opacity:1;
+}
+
+li > .HLSameLevel >*{
+	background: rgba(247,247,249,0.2);/*#f7f7f9;*/
+}
+
+li > ol.HLChildLevel, li > ul.HLChildLevel{
+	/*border-color: #e1e1e8;*/
+	background: rgb(247,247,249);
+}
+
+/*.HLChildLevel >li >div{
+	opacity: 0.75;
+}*/
+
+
