@@ -1,3 +1,38 @@
+7.1.5 : Used to commit PHP Parser Version 2.4
+======
+* Only few uninfluential differences from the one committed with PHP Parser Version 2.4
+* Change the structure of DOM from '.relateDiv >ul >li*' to '.relateDiv >div >div*'
+* Clarify the sequence of various animates, & details in Evernote:'20150722 CAScroll : implement of UDR v 7.1.5'
+
+
+CAScroll.css
+- Change 'background:rgba(247,247,249,0.2)' to 0.25 , since 0.2 is not visible
+- Update selectors of .relateDiv children in CAScroll.css
+- Update styles for .relateDiv to help setting more accurate position for itself
+
+
+CAScroll.js
+- Update part related to change '.relateDiv >ul >li*' to '.relateDiv >div >div*'
+- Rename setHLB() to updateHLB()
+- Add setRDivLeft() and setRDivTop() to set position for .relateDiv separately
+
+Update initRDiv(): 
+- init 'max-width' for .relateDiv
+- init 'width' for every .relateDiv>div>div
+- init to hide .relateDiv
+
+Revise updateRDiv() to hasRDiv():
+- check if has to show .relateRDiv to next expand item
+- If Has: update .hlSupport to .relateDiv>div>div
+- If Has: get & return the width & height related div [outer(true)]
+
+Revise triggerAnimate():
+- Change the sequence to animates
+- Extract animates except some related to .relateDiv to function scroll()
+- !! scroll() will be called after finishing scrollLeft on .relateDiv 
+
+
+
 7.1.4
 ======
 New DOM structure to support fixed .contentDiv width with scroll its offset().left to show .relateDiv (workable, but with multi problems)

@@ -84,8 +84,8 @@ body {
 
 
 /*4. background & border*/
-.contentDiv li > .HLSameLevel >*{
-	background: rgba(247,247,249,0.2);/*#f7f7f9;*/
+.contentDiv li > .HLSameLevel {
+	background: rgba(247,247,249,0.25);/*#f7f7f9;*/
 }
 
 .contentDiv li > ol.HLChildLevel, .contentDiv li > ul.HLChildLevel{
@@ -139,18 +139,16 @@ body {
 /*Styels related to positoin & width*/
 .relateDiv >*{
   padding: 9px 14px;
-  background:rgba(247,247,249,0.2);/**/
+  background:rgba(247,247,249,0.25);/**/
 }
 
-.relateDiv >ul >li >ul {
+.relateDiv >div >div >ul {
 	padding-left: 28px;
 }
-
-.relateDiv >ul{
-	list-style-type: none;
-}
-.relateDiv >ul>li:not(.hlSupport){
-	display: none;
+.relateDiv >div >div{
+	display: inline-block;    
+    clear: both;
+	margin: auto;
 }
 
 .relateDiv img{
@@ -159,11 +157,9 @@ body {
 
 /*Similar to 7.3*/
 .relateDiv{
-	margin-left: 15px;
- 	margin-right: 15px;
-	
-	max-width:50wh;
-	display:none;
+	margin-left: 10px;
+ 	margin-right: 10px;
+	/*display:none;*/
 	
 	position: absolute;
 }
@@ -171,7 +167,7 @@ body {
 .contentWrap {
 	/*border: 5px solid red;*/
 	width:98wh;
-	max-width: 800px;/*1024px;*/
+	max-width:800px;
 	/*margin:auto;*//* set position in specificOrganizeBODY to make it centerered*/
 
 	position: relative;
@@ -186,10 +182,7 @@ body {
 	/*overflow:scroll;*/
 
 	height: 95vh;
-	/*width:98wh;*/
 	width: 100%;
-	/*max-width: 1024px;*/
-	/*margin:auto;*/
 }
 
 .hlBackground{

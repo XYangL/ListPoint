@@ -30,11 +30,11 @@ var init = function (){
 	/*2. Show & Hide : init every item */
 	$('.contentDiv li>ol, .contentDiv li>ul').hide();
 
-	initWrap();
-
 	/* init 1st HL target */
 	var firstHL = divs.eq(index);
 	firstHL.addClass('highlight');
+
+	initWrap();
 
 	/*3. Static Highilght Background :  init .hlBackground position, width, height*/
 	initHLB(firstHL, setHeight(firstHL,"full")); // setHeight(firstHL,"full");
@@ -53,8 +53,7 @@ var specificOrganizeBODY = function(){
 
 	/*3. Static Highilght Background*/
     /* Add div.hlBackground to highlight in Blue */
-    // HLBack = $('.hlBackground'); 
-	HLBack = $('<div class="hlBackground"></div>'); 
+	HLBack = $('<div class="hlBackground"></div>'); // HLBack = $('.hlBackground'); 
 	HLBack.insertAfter(root);
 
 	/*6. User Defined Relationship */
@@ -65,7 +64,8 @@ var specificOrganizeBODY = function(){
 		FN.remove();
 		FN.find('ol>li').each(function(){
 			$(this).find('.footnote-backref').parent().remove();
-			RDiv.children(':first').append($(this));
+			var temp = $('<div/>',{id: $(this).attr('id')}).append($(this).html());
+			RDiv.children(':first').append(temp);
 		});
 
 		// S2: Get Img, replace it with des-list in DOM & insert img into relateDiv
@@ -91,15 +91,14 @@ var specificOrganizeBODY = function(){
 
 			$(this).parent().html($(this).attr('alt')+ " <b>[img]</b>"	+  linkSUP );
 			$(this).remove();
-			var temp = $('<li/>',{id: 'IMG:NO'.replace("NO", index) }).append($(this));
+			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index) }).append($(this));
 			RDiv.children(':first').append(temp);		
 		});
 	}
-
 	/* Init relateDiv, fill it, & inset into DOM*/
 	// 0.0 init RelateDiv
 	relateDiv = $("<div/>", {class: "relateDiv"});
-	relateDiv.append( $('<ul/>'));
+	relateDiv.append( $('<div/>'));
 
 	// 0.1 Get Footnote & Replace
 	// 0.2 Get Img & Replace
@@ -108,7 +107,7 @@ var specificOrganizeBODY = function(){
 	// 0.3 Add RelateDiv to body
 	relateDiv.insertAfter(root.parent());
 
-	/*7. Other special requirement of CAScroll on Dom structure */
+	/*7. Other special requirement of CAScroll on DOM structure */
 	/* convert ol>li to div+ol>li>div:first-child */
 	ol = root.find('ol');
 	ol.children().wrapInner("<div></div>");
@@ -168,32 +167,52 @@ var initRDiv = function () {
 	  so if wh<2048/0.98, relative Div will be overlapped by contentDiv*/
 	relateDiv.css('left', initLeft);
 	
-	/*.relateDiv and .hlBackground should have SAME Horizontal center*/
-	relateDiv.css('top', HLBack.offset().top + HLBack.outerHeight()/2);
+	/*.relateDiv:margin-left/rifht is 10px each, border is 1 each, padding is 1 each*/
+	// relateDiv.css('max-width', $('body').outerWidth()- root.outerWidth(true) -20 -2 -2);
+	var relateDivBox = relateDiv.outerWidth(true)-relateDiv.width();
+	relateDiv.css('max-width', $('body').outerWidth()- root.outerWidth(true) - relateDivBox);
 
-	/*set max-width of .realteDiv as window.size-.cotentDiv.size
-	  .relateDiv:margin-left/rifht is 15px each*/
-	relateDiv.css('max-width', $('body').outerWidth()- root.outerWidth(true) - 30);
+	relateDiv.children().children().each(function(index, el) {
+		console.log($(this).attr('id'), $(this).outerWidth(), $(this).width());
+		$(this).width($(this).width())
+		$(this).hide();
+	});
+
+	relateDiv.hide();
 }
 
-var updateRDiv = function(RLI, temp){
-	/*RLI should have .hlSupport to get the correct width*/
-	relateDiv.css({  visibility: "hidden", display: "block" });
-	var RDivWidth = relateDiv.outerWidth(true);
-	var RDivHeight = relateDiv.outerHeight(true);
-
-	relateDiv.css({  visibility: "", display: "" }); //console.log(RDivWidth);
+var hasRDiv = function(expand){
+	var RDivWidth = 0, RDivHeight = 0, target = null;
 	
-	relateDiv.css('left', initLeft+ $('.contentWrap').outerWidth() - RDivWidth/2);
+	var relateLI = expand.find('sup>a.footnote-ref');
+	if (relateLI.size() ==0) { /*NO need to show*/
+		hideRDiv();
+	} else {  /*Need to show*/ 
+		relateLI.each(function() {
+			target = $($(this).attr('href').replace(':', '\\:'));
+			if ($('.hlSupport').attr('id') != target.attr('id') ){
+				$('.hlSupport').hide()
+				$('.hlSupport').removeClass('hlSupport');
+			}
+			target.addClass('hlSupport');
+			target.show();
+		});
+		RDivWidth = relateDiv.outerWidth(true);
+		RDivHeight = relateDiv.outerHeight(true);
+	}
+	return { RLI:target,  width: RDivWidth, height: RDivHeight };
+}
 
-	/*.relateDiv and .hlBackground should have SAME Horizontal center*/
-	relateDiv.css('top',  HLBack.offset().top + temp/2 - RDivHeight/2);
-	return -RDivWidth/2
+var setRDivLeft = function(target){
+	relateDiv.animate({left:$('body').offset().left +initLeft + $('.contentWrap').outerWidth(true) - target.width/2},'slow');
+}
+var setRDivTop = function(target, temp){
+	relateDiv.animate({top:HLBack.offset().top + temp/2 - target.height/2},'slow');
 }
 
 var hideRDiv = function(){
 	// relateDiv.hide('slow');
-	relateDiv.effect('slide', { direction: 'left', mode: 'hide' }, 'slow');
+	relateDiv.effect('slide', { direction: 'right', mode: 'hide' }, 'slow');
 }
 var showRDiv = function(){
 	// relateDiv.show('slow');
@@ -226,7 +245,89 @@ var setHeight = function(object, mode){
 
 var triggerAnimate = function(unit,mode){
 	if (unit == 0){	return 0; }
+	var scroll = function(){
+		//5 change .HL /* Reset .highlight target : change from shrink to expand */
+		shrink.removeClass('highlight');
+		expand.addClass('highlight');
 
+		//6 setHeight()	/*1. Expand & Shrink : via resetting height */
+		var oneLineH = setHeight(shrink, "one-line");
+		var fullH = setHeight(expand, "full");	
+
+		//7
+		setRDivTop(relateTarget, fullH);
+
+		//8 
+		if (relateTarget.RLI != null) {
+			showRDiv();
+		}
+
+		//9	/*2. Show & Hide on the related items : based on the unit */
+		var slideUpHeight = 0;  var slideDownHeight = 0;
+		if(unit > 0){ // NEXT
+			slideUpHeight += shrinkOldHeight-oneLineH;
+
+			// -1- show the detailed of expand
+			expand.nextAll('ol,ul').slideDown('slow');//ol
+			
+			// -2- hide the detailed of shrink's previous sibling
+			var slideUP = shrink.parent().prev().children('ul[style!="display: none;"], ol[style!="display: none;"]');	
+			if(slideUP.size() !=0) 
+			{
+				slideUpHeight += slideUP.outerHeight(true);
+				slideUP.slideUp('slow');
+			}
+
+			// -5- More to support usable Prev
+			if (mode== 'key'&& unit >1){ // press Down, skip details
+				slideUP = shrink.nextAll('ol,ul');
+				if(slideUP.size() !=0) 
+				{
+					slideUpHeight += slideUP.outerHeight(true);
+					slideUP.slideUp('slow');
+				}
+			}
+
+		} else if (unit < 0){ // PREV
+			// -3- hide the detailed of shirnk
+			shrink.nextAll('ol,ul').slideUp('slow');//ol
+			
+			if(unit == -1){
+			// -4- show the detailed of expand's previous sibling
+				var slideDown = expand.parent().prev().children('ul[style="display: none;"], ol[style="display: none;"]');
+				if(slideDown.size() !=0) 
+				{
+					slideDownHeight = slideDown.outerHeight(true);
+					slideDown.slideDown('slow');
+				}
+
+			} else{// UP
+			// -1- show the detailed of expand
+				expand.nextAll('ol,ul').slideDown('slow');//ol
+			}
+		}
+
+		//10 
+		updateHLB(expand, fullH);
+
+		//11/* 4. Background : on related items */
+		$('.HLChildLevel').removeClass('HLChildLevel');
+		expand.nextAll('ol,ul').addClass('HLChildLevel');//ol
+
+		$('.HLSameLevel').removeClass('HLSameLevel');
+		expand.parent().parent().addClass('HLSameLevel');//ol
+		
+		//12/*0. Scrollable*/
+		var reviseTop = expandTop - shrinkTop + slideDownHeight - slideUpHeight;
+		// if (mode=='click') {
+			targetTop = root.scrollTop();
+		// };
+		targetTop += reviseTop;
+		root.animate({scrollTop:targetTop},'slow');
+
+	}
+
+	//1
 	var shrink = divs.eq(index);
 	var expand = divs.eq(index+unit);
 
@@ -235,97 +336,19 @@ var triggerAnimate = function(unit,mode){
 	var shrinkOldHeight = shrink.height();
 	var shrinkTop = $('.hlBackground').position().top;
 	var expandTop = expand.position().top;
+
+	//2
+	var relateTarget = hasRDiv(expand);
 	
-	/* Reset .highlight target : change from shrink to expand */
-	shrink.removeClass('highlight');
-	expand.addClass('highlight');
+	//3
+	setRDivLeft(relateTarget);
 
-	/*1. Expand & Shrink : via resetting height */
-	var oneLineH = setHeight(shrink, "one-line");
-	var fullH = setHeight(expand, "full");	
-
-	/*2. Show & Hide on the related items : based on the unit */
-	var slideUpHeight = 0;  var slideDownHeight = 0;
-	if(unit > 0){ // NEXT
-		slideUpHeight += shrinkOldHeight-oneLineH;
-
-		// -1- show the detailed of expand
-		expand.nextAll('ol,ul').slideDown('slow');//ol
-		
-		// -2- hide the detailed of shrink's previous sibling
-		var slideUP = shrink.parent().prev().children('ul[style!="display: none;"], ol[style!="display: none;"]');	
-		if(slideUP.size() !=0) 
-		{
-			slideUpHeight +=slideUP.outerHeight(true);
-			slideUP.slideUp('slow');
-		}
-
-		// -5- More to support usable Prev
-		if (mode== 'key'&& unit >1){ // press Down, skip details
-			slideUP = shrink.nextAll('ol,ul');
-			if(slideUP.size() !=0) 
-			{
-				slideUpHeight += slideUP.outerHeight(true);
-				slideUP.slideUp('slow');
-			}
-		}
-
-	} else if (unit < 0){ // PREV
-		// -3- hide the detailed of shirnk
-		shrink.nextAll('ol,ul').slideUp('slow');//ol
-		
-		if(unit == -1){
-		// -4- show the detailed of expand's previous sibling
-			var slideDown = expand.parent().prev().children('ul[style="display: none;"], ol[style="display: none;"]');
-			if(slideDown.size() !=0) 
-			{
-				slideDownHeight = slideDown.outerHeight(true);
-				slideDown.slideDown('slow');
-			}
-
-		} else{// UP
-		// -1- show the detailed of expand
-			expand.nextAll('ol,ul').slideDown('slow');//ol
-		}
-	} 
-
-	/* 4. Background : on related items */
-	$('.HLChildLevel').removeClass('HLChildLevel');
-	expand.nextAll('ol,ul').addClass('HLChildLevel');//ol
-
-	$('.HLSameLevel').removeClass('HLSameLevel');
-	expand.parent().parent().addClass('HLSameLevel');//ol
-
-	/*0. Scrollable*/
-	var reviseTop = expandTop - shrinkTop + slideDownHeight - slideUpHeight;
-	// if (mode=='click') {
-		targetTop = root.scrollTop();
-	// };
-	targetTop += reviseTop;
-	// root.animate({scrollTop:targetTop},'slow'); /* Scroll Top after .contentDiv update position*/ 
-
-	/*6. User Defined Relationship */
-	var relateLI = expand.find('sup>a.footnote-ref');
-	var targetLeft = initLeft;
-	if (relateLI.size() ==0) {  console.log('NO Related Info!');
-		/*NO need to show*/
-
-	} else {  
-		/*Need to show*/ // console.log('Get Related :', $(this).attr('href'));	
-		$('.hlSupport').removeClass('hlSupport');
-		relateLI.each(function() {
-			$($(this).attr('href').replace(':', '\\:')).addClass('hlSupport');
-			targetLeft = initLeft + updateRDiv($('.hlSupport'), fullH);
-		});
-	}
-	
-	// console.log(initLeft, targetLeft);
-	$('.contentWrap').animate({left:targetLeft},'slow', function(){
-		relateLI.size()==0 ?  hideRDiv() : showRDiv();
-
-		updateHLB(expand, fullH);
-		root.animate({scrollTop:targetTop},'slow');
-	});
+	//4
+	var targetLeft = initLeft - (relateTarget.width) /2;
+	(relateTarget.RLI == null) && (relateDiv.css('display') == 'none') ? scroll() 
+			: $('.contentWrap').animate({left:targetLeft},'slow', function(){
+				scroll();
+			});
 
 	/*---v4-8--Scrollable Highlight-------*/
 	// $('.highlight').css('background', '');
@@ -394,8 +417,7 @@ var main = function(){
 	$("li>div:first-child").click(function(event) {
 		/* Act on the event */
 		var expandID = parseInt($(this).attr('id').replace("item", ""));
-		unit = expandID-index;
-		// console.log(expandID, unit);
+		unit = expandID-index;// console.log(expandID, unit);
 
 		triggerAnimate(unit,'click');
 		index += unit;
