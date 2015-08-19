@@ -197,3 +197,11 @@ body {
 	list-style-type:none;
 	text-align:center;
 }
+
+/*Avoid mark work as link*/
+.footnote-passive{
+	text-decoration:none;
+	pointer-events: none;
+	cursor: default;
+	padding-left: 15px;
+}

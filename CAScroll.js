@@ -60,13 +60,25 @@ var specificOrganizeBODY = function(){
 	/*6. User Defined Relationship */
 	var fillRelateDiv = function( RDiv ){
 		// S1: Get Footnote, remove from DOM & insert into relateDiv
-		$('.footnote-ref').text('');
+		// $('.footnote-ref').text('');
 		var FN = $('div.footnotes');//console.log(FN.size());
 		FN.remove();
 		FN.find('ol>li').each(function(){
-			$(this).find('.footnote-backref').parent().remove();
-			var temp = $('<div/>',{id: $(this).attr('id')}).append($(this).html());
+			/* Remove the back link tag */
+			// $(this).find('.footnote-backref').parent().remove();
+			$(this).find('.footnote-backref').remove();
+			lastP = $(this).children('p:last');
+			if (!lastP.html().trim()){ lastP.remove(); }
+			var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'passive'}).append($(this).html());
 			RDiv.children(':first').append(temp);
+		});
+		
+		/* Append mark to items with passive/more contents*/
+		$('.footnote-ref').each(function(index, el) {
+			var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-passive'});
+			tempLink.html('&#8649');
+			tempLink = $('<sub/>').append(tempLink);
+			$(this).parent().replaceWith(tempLink);
 		});
 
 		// S2: Get Img, replace it with des-list in DOM & insert img into relateDiv
@@ -78,21 +90,21 @@ var specificOrganizeBODY = function(){
 			var level = imgParentDiv.parent().parent().attr('class');
 			level = 'L_'.concat(parseInt(level.substr(-1))+1);
 			
-			var linkSUP = '<sup id=""><a href="#IMG:NO" class="footnote-ref"></a></sup>'.replace("NO", index);
+			var linkSUB = '<sub id=""><a href="#IMG:NO" class="footnote-active"></a></sub>'.replace("NO", index);
 			var desUL = imgParentDiv.parent().next().find('div>ul');
 			if (desUL.size()>0) {
 				desUL = desUL.eq(0);
 				desUL.addClass(level);
-				desUL.children().append(linkSUP);
+				desUL.children().append(linkSUB);
 				desUL.children().wrapInner('<p></p>');
 				desUL.children().wrapInner('<div></div>');
 				desUL.parent().parent().remove();// li
 				desUL.insertAfter(imgParentDiv);
 			};
 
-			$(this).parent().html($(this).attr('alt')+ " <b>[img]</b>"	+  linkSUP );
+			$(this).parent().html($(this).attr('alt')+ " <b>[img]</b>"	+  linkSUB );
 			$(this).remove();
-			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index) }).append($(this));
+			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index), 'class': 'active'}).append($(this));
 			RDiv.children(':first').append(temp);		
 		});
 
@@ -102,14 +114,14 @@ var specificOrganizeBODY = function(){
 		IMGTitle.each(function(index, value) {
 			var imgParentDiv = $(this).parent();
 			
-			var linkSUP = '<sup id=""><a href="#IMG:NO" class="footnote-ref"></a></sup>'.replace("NO", index+IMG.size());
-			imgParentDiv.append(linkSUP);
+			var linkSUB = '<sub id=""><a href="#IMG:NO" class="footnote-active"></a></sub>'.replace("NO", index+IMG.size());
+			imgParentDiv.append(linkSUB);
 			var childPs = imgParentDiv.next().find('li >div');
 			if (childPs.size()>0) {
-				childPs.append(linkSUP);
+				childPs.append(linkSUB);
 			};
 			// $(this).remove();
-			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index+IMG.size()) }).append($(this));
+			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index+IMG.size()), 'class': 'active'}).append($(this));
 			RDiv.children(':first').append(temp);		
 		});
 	}
@@ -235,25 +247,30 @@ var initRDiv = function () {
 }
 
 var hasRDiv = function(expand){
-	var RDivWidth = 0, RDivHeight = 0, target = null;
+	var RDivWidth = 0, RDivHeight = 0, target = null, type = null;
 	
-	var relateLI = expand.find('sup>a.footnote-ref');
-	if (relateLI.size() ==0) { /*NO need to show*/
-		hideRDiv();
-	} else {  /*Need to show*/ 
-		relateLI.each(function() {
-			target = $($(this).attr('href').replace(':', '\\:'));
+	var relateLI = expand.find('sub>a.footnote-active');
+	relateLI.each(function() {
+		target = $($(this).attr('href').replace(':', '\\:'));
+		if(target.attr('class').indexOf('active') > -1){
+			type = 'active';
 			if ($('.hlSupport').attr('id') != target.attr('id') ){
 				$('.hlSupport').hide()
 				$('.hlSupport').removeClass('hlSupport');
 			}
 			target.addClass('hlSupport');
-			target.show();
-		});
+			target.show();				
+		}
+	});
+
+	if ( type != 'active') { /*NO need to show relateLI.size() ==0*/
+		hideRDiv();
+		target = null;
+	} else {  /* Need to show*/ 
 		RDivWidth = relateDiv.outerWidth(true);
 		RDivHeight = relateDiv.outerHeight(true);
 	}
-	return { RLI:target,  width: RDivWidth, height: RDivHeight };
+	return { RLI:target,  width: RDivWidth, height: RDivHeight, type:type };
 }
 
 var setRDivLeft = function(cDiv){
@@ -271,6 +288,38 @@ var hideRDiv = function(){
 var showRDiv = function(){
 	// relateDiv.show('slow');
 	relateDiv.effect('slide', { direction: 'left', mode: 'show' }, 'slow');
+}
+
+var hasMore = function(highlight){
+	var RDivWidth = 0, RDivHeight = 0, target = null, type = null;
+	
+	var relateLI = highlight.find('sub>a.footnote-passive');
+	relateLI.each(function() {
+		target = $($(this).attr('href').replace(':', '\\:'));
+		if(target.attr('class').indexOf('passive') > -1){
+			type = 'passive';
+			if ($('.hlSupport').attr('id') != target.attr('id') ){
+				$('.hlSupport').hide()
+				$('.hlSupport').removeClass('hlSupport');
+			}
+			target.addClass('hlSupport');
+			
+			if (relateDiv.css('display')!='none' && target.css('display')!='none') {
+				type = null;
+			} else {
+				target.show();				
+			}
+		}
+	});
+
+	if ( type != 'passive' ) { /*NO need to show relateLI.size() ==0*/
+		hideRDiv();
+		target = null;
+	} else {  /* Need to show*/ 
+		RDivWidth = relateDiv.outerWidth(true);
+		RDivHeight = relateDiv.outerHeight(true);
+	}
+	return { RLI:target,  width: RDivWidth, height: RDivHeight, type:type };
 }
 
 var setHeight = function(object, mode){
@@ -298,6 +347,24 @@ var setHeight = function(object, mode){
 }
 
 var triggerAnimate = function(unit,mode){
+	if (mode == 'more') {
+		/* if mode == more, then unit==0, so expand = #item(index+0) = current highlight*/
+		var current = divs.eq(index+unit);
+		var moreTarget = hasMore(current);
+		var updatedCDiv = checkWrap(moreTarget, mode);
+		setRDivLeft(updatedCDiv);
+		$('.contentWrap').animate({left:updatedCDiv.left, width:updatedCDiv.width },'slow', function(){
+			var fullH = setHeight(current, "full");
+			
+			setRDivTop(moreTarget, fullH);
+			updateHLB(current, fullH);
+
+			if (moreTarget.type == 'passive'){
+				showRDiv();// console.log('show More');
+			}
+		});		
+		return 0
+	};
 	if (unit == 0){	return 0; }
 	var scroll = function(){
 		//5 change .HL /* Reset .highlight target : change from shrink to expand */
@@ -423,7 +490,7 @@ var main = function(){
 
 	/* Action :  Relate the action to key */
 	$(document).keydown(function(key) {	
-		var unit = 0;	
+		var unit = 0, mode = 'key';	
 		switch(parseInt(key.which,10)) {
 			case 37:// Left : -1 | <-1
 				event.preventDefault();
@@ -466,9 +533,14 @@ var main = function(){
 					$('.L_1').children().last().children('ul').slideUp();
 				};			
 				break;
+			case 32:
+				event.preventDefault();
+				unit = 0;
+				mode = 'more';
+				break;
 		}; // END -- switch
 		
-		triggerAnimate(unit,'key');
+		triggerAnimate(unit,mode);
 		index += unit;
 
 		// return false; // disable scroll via arrow key

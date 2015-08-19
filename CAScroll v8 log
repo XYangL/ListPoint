@@ -1,3 +1,51 @@
+======
+8.1 : 3rd key 'space' to show more content passively in the right pane 
+======
+(Specify passive contents in mdSrc as footnotes)
+
+Treat active and passive differently
+* accept footnote including multi paragraph, lists, block quotes, with tabs
+* append mark '->' to item with passive/more content
+* differ passive from active in .relateDiv
+
+Add Action to trigger passive
+* check if have passive
+* use 'space' to show/hide in right pane
+
+
+CAScroll.js/fillRelateDiv() : Treat active and passive differently
+1. Accept footnote including multi paragraph, lists, block quotes, with tabs
+- Then there maybe contens in the last <p> besides back-link:'.footnote-backref' tag
+- change the way to remove '.footnote-backref'
+
+2. Append mark '->' to item with passive/more content
+- replace orgianl sup>a>... with SUB>a>&#8649
+
+3 Differ passive from active in .relateDiv : set clas=active/passive fo div# inserted to .relateDiv>div
+- set class='passive' for items parsered into footnotes as passive contents in .relateDiv
+- set class='active' for images moved to .relateDiv as active contents
+- use linkSUB = SUB>a.footnote-ACTIVE/PASSIVE as mark appened in items:li>div
+- CAScroll.css : set style for .footnote-passive to avoid mark work as link
+
+CAScroll.js : Add Action to trigger passive
+1. check if have passive
+- Update hasRDiv(): Add type=null/active/passive to return
+- Update hasRDiv(): Only return meanfulling values when has .footnote-active && type='active'
+- Add hasMore(): Similar to hasRDiv() and Only return meanfulling values when following two are BOTH True
+ * has .footnote-passive && type='passive'
+ * !! both target and t relateDiv is not shown !!
+
+2. use 'space' to show/hide in right pane
+- Update $(document).keydown() : add listener for 'space' to show passive with mode='more'
+- Update triggerAnimate() : add process if mode=='more'
+ * similar to process if mode=='key' and unit!=0 
+ * call checkWrap() and animate to update width and left for .conetntWrap
+ * call setHeight() and updtaeHLB() update height related to .highlight
+ * call setRDivLeft() and setRDivTop() to set position of .relateDiv
+ * call showRDiv() according to valued returned from hasMore()
+
+
+======
 8.0 : Support bigger width of image in RelateDiv (Revised from v7.5)
 ======
 * Allow to resize .contentWrap when necessary
