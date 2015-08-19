@@ -40,7 +40,7 @@ var init = function (){
 	initHLB(firstHL, setHeight(firstHL,"full")); // setHeight(firstHL,"full");
 
 	/*6. User Defined Relationship : init .relateDiv position */
-	initRDiv()
+	initRDiv();
 
 };
 
@@ -94,6 +94,23 @@ var specificOrganizeBODY = function(){
 			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index) }).append($(this));
 			RDiv.children(':first').append(temp);		
 		});
+
+		/* Images marked with # in mdSrc, parsered to li>div>img without <p>
+			Keep original title, no description, and move img to relateDiv */
+		var IMGTitle = $('.contentDiv li>div>img')
+		IMGTitle.each(function(index, value) {
+			var imgParentDiv = $(this).parent();
+			
+			var linkSUP = '<sup id=""><a href="#IMG:NO" class="footnote-ref"></a></sup>'.replace("NO", index+IMG.size());
+			imgParentDiv.append(linkSUP);
+			var childPs = imgParentDiv.next().find('li >div');
+			if (childPs.size()>0) {
+				childPs.append(linkSUP);
+			};
+			// $(this).remove();
+			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index+IMG.size()) }).append($(this));
+			RDiv.children(':first').append(temp);		
+		});
 	}
 	/* Init relateDiv, fill it, & inset into DOM*/
 	// 0.0 init RelateDiv
@@ -124,6 +141,15 @@ var specificOrganizeBODY = function(){
 		level = 'L_'.concat(parseInt(level.substr(-1))+1);
 		$(this).addClass(level);
 	});
+
+	/* List items marked with - in mdSrc, parsered to li>div>ul 
+		Moved as children of previous li>div*/
+	ulItem = root.find('li>div>ul'); //console.log(ulItem.size());
+	ulItem.each(function(index, el) {
+		liPareTemp = $(this).parentsUntil('li').parent();
+		liPareTemp.prev().children().append($(this));
+		liPareTemp.remove();		
+	});
 	
 	/* wrap title = ul>li>div:first-child with <p> */
 	var firstTitle = root.find('ul>li>div:first-child').first();
@@ -134,6 +160,18 @@ var specificOrganizeBODY = function(){
 			$(this).wrapInner('<p/>'); //console.log($(this).html());
 		}		
 	});
+
+	/* Items marked with # in mdSrc which has no details, parsered to li>div directly without <p> 
+		wrap item with <p>*/
+	root.find('li>div:first-child').each(function(){
+		if($(this).has('p').size()==0){
+			$(this).wrapInner('<p/>');
+		}
+	});
+
+	/* Find and set ID for title, having special style setting via css */
+	$('.L_1 >li:first').attr('id','title');
+
 }
 
 var initHLB = function(base, temp){ 
@@ -168,7 +206,6 @@ var initRDiv = function () {
 	relateDiv.css('left', initLeft);
 	
 	/*.relateDiv:margin-left/rifht is 10px each, border is 1 each, padding is 1 each*/
-	// relateDiv.css('max-width', $('body').outerWidth()- root.outerWidth(true) -20 -2 -2);
 	var relateDivBox = relateDiv.outerWidth(true)-relateDiv.width();
 	relateDiv.css('max-width', $('body').outerWidth()- root.outerWidth(true) - relateDivBox);
 
@@ -228,7 +265,7 @@ var setHeight = function(object, mode){
 	} else if (mode === "full") {
 	/* expand, IS highlight */
 		if(object.children().first().attr('class')=="MathJax_Preview"){
-		// for set  'MathJax' in highlight
+		/* for set  'MathJax' in highlight */
 			temp = object.height();
 		} else {
 			object.children().each(function(){
@@ -395,6 +432,9 @@ var main = function(){
 				event.preventDefault();
 				if (index+1<num){
 					unit = 1;
+				} else{/* When reach last item, then next will be 1st title*/
+					unit = -index;
+					$('.L_1').children().last().children('ul').slideUp();
 				}				
 				break;
 			case 40:// Down : >0 	
@@ -402,7 +442,10 @@ var main = function(){
 				var childrenSize = divs.eq(index).siblings('ul,ol').find('li>div:first-child').size();
 				unit = 1 + childrenSize;
 				if (index+unit > num-1) {
-					unit = 0;
+					//unit = 0;
+					/* When reach last item, then next will be 1st title*/
+					unit = -index;
+					$('.L_1').children().last().children('ul').slideUp();
 				};			
 				break;
 		}; // END -- switch
