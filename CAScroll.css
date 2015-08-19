@@ -52,7 +52,7 @@ body {
 .contentDiv li >div.highlight{
 	/*opacity: 0.5;*/
 	/*background:#f0ad4e;*/
-	white-space:normal;
+	white-space:normal;	
 }
 
 .contentDiv li >div >* {
@@ -167,7 +167,7 @@ body {
 .contentWrap {
 	/*border: 5px solid red;*/
 	width:98wh;
-	max-width:1024px;
+	max-width:800px;
 	/*margin:auto;*//* set position in specificOrganizeBODY to make it centerered*/
 
 	position: relative;
@@ -189,9 +189,3 @@ body {
 	position:absolute;
 }
 
-/*Set Style for Title*/
-#title {
-	font-size:150%;
-	list-style-type:none;
-	text-align:center;
-}

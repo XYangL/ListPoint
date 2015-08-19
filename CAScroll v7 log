@@ -1,39 +1,3 @@
-7.2 : Used for demo at 0813
-======
-* Display Title differently
-* Support 3 more special cases in mdSrc
-* Update action for next/down when reach last item
-* Example
-
-1. Dispaly Title differently
-- CAScroll.css : Set style for #title
-- CAScroll.js / specificOrganizeBODY() : Find and set ID for title in the end of the method
-
-
-2. Support 3 more special cases in mdSrc in CAScroll.js / fillRelateDiv()
-- img wrapped with # in mdSrc, parsered to li>div>img without <p> in html
-  => Keep original title, no description, and move img to relateDiv
-
-- items marked with - in mdSrc, parsered to list as: li>div>ul in html
-  => Moved as children of previous li>div
-
-- items wrapped with # in mdSrc which has no details, parsered to li>div directly without <p> in html
-  => Wrap item with <p>
-
-
-3. Update action for next/down when reach last item in CAScroll.js / main() / $(document).keydown() 
-- When reach last item, then next will be 1st title CAScrollms
-- case 39: // Right : +1
-- case 40: // Down : >0
-- unit = -index; $('.L_1').children().last().children('ul').slideUp();
-
-
-4. Example
-- PSModel.md with special cases in md
-- HTML and Image for example
-
-
-
 7.1.5 : Used to commit PHP Parser Version 2.4
 ======
 * Only few uninfluential differences from the one committed with PHP Parser Version 2.4
