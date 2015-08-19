@@ -1,0 +1,28 @@
+8.0 : Support bigger width of image in RelateDiv (Revised from v7.5)
+======
+* Allow to resize .contentWrap when necessary
+
+1. update way to set width & left for .hlBackground
+- CAScroll.css: width of .hlBackground is 100% (of .contentWrap)
+- CAScroll.js : no need to set left & width for HLBack in updateHLB() 
+
+
+2. update way to set width & left for .contentWrap
+CAScroll.css:
+- Add min-width for .cotnentWrap
+
+CAScroll.js:
+- Add global var $initWidth
+- Update initWrap(): init $initWidth as initial width of .contentWrap
+- Add checkWrap() : 
+ * return {left:left, width:width} of new .contentWrap depends on relateDiv>li
+ * used to animate on .contentWrap and setRDivLeft()
+- Update triggerAnimate() :
+ * call checkWrap() after hasRDiv() and before setRDivLeft()
+ * updatedCDiv including targetLeft is returned from checkWrap() directly
+ * animate both left and width on .contentWrap if necessary
+
+
+3. update way to set width & left for .relateDiv in CAScroll.js
+- update initRdiv() : init max-width based on min-width of .contentWrap
+- update setRDivLeft() : set left based on the value of .contentWrap returned from checkWrap()

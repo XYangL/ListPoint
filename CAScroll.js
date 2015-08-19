@@ -7,6 +7,7 @@ var targetTop = 0;
 var HLBack = null;
 var relateDiv = null;
 var initLeft = 0;
+var initWidth = 0;
 
 var init = function (){
 	root = $('div.contentDiv');
@@ -185,18 +186,31 @@ var updateHLB = function(base, temp){
 	/*	Depend on base - $('.highlight')
 		HLB.height has transition, which need to be varied to final value,
 		so get its height from temp,  instead of using .outHeight() directly*/
-	HLBack.css("left",base.position().left); // HLBack.css(base.position());
+	// HLBack.css("left",base.position().left); // HLBack.css(base.position());
 
 	// HLBack.height(base.outerHeight());
 	var borderTemp = base.outerHeight()-base.height();
 	HLBack.height(temp+borderTemp);
-	HLBack.width(base.outerWidth());
+	// HLBack.width(base.outerWidth());
 }
 
 var initWrap = function(){
 	/* The whole .contentWrap should be in the center of the screen*/
 	initLeft = ($('body').outerWidth()-$('.contentWrap').outerWidth())/2;
 	$('.contentWrap').css('left', initLeft );
+	initWidth = $('.contentWrap').width();
+}
+
+var checkWrap = function(target){
+	var left = initLeft - (target.width)/2;
+	var width = initWidth;
+	/* left >=0 means  initLeft*2 >= (relateTarget.width)
+		that includes relateTarget.RLI == null || relateTarget.width <= initleft*2 */
+	if (left < 0  ){ // relateTarget.width > initleft*2
+		left = 0;
+		width = $('body').outerWidth() - target.width;
+	}
+	return {left:left, width:width};
 }
 
 var initRDiv = function () {
@@ -207,7 +221,9 @@ var initRDiv = function () {
 	
 	/*.relateDiv:margin-left/rifht is 10px each, border is 1 each, padding is 1 each*/
 	var relateDivBox = relateDiv.outerWidth(true)-relateDiv.width();
-	relateDiv.css('max-width', $('body').outerWidth()- root.outerWidth(true) - relateDivBox);
+	// relateDiv.css('max-width', $('body').outerWidth()- root.outerWidth(true) - relateDivBox);
+	var conentDivmin = parseInt($('.contentWrap').css('min-width'), 10);
+	relateDiv.css('max-width', $('body').outerWidth()- conentDivmin - relateDivBox);
 
 	relateDiv.children().children().each(function(index, el) {
 		console.log($(this).attr('id'), $(this).outerWidth(), $(this).width());
@@ -240,8 +256,9 @@ var hasRDiv = function(expand){
 	return { RLI:target,  width: RDivWidth, height: RDivHeight };
 }
 
-var setRDivLeft = function(target){
-	relateDiv.animate({left:$('body').offset().left +initLeft + $('.contentWrap').outerWidth(true) - target.width/2},'slow');
+var setRDivLeft = function(cDiv){
+	// relateDiv.animate({left:$('body').offset().left +initLeft + $('.contentWrap').outerWidth(true) - target.width/2},'slow');
+	relateDiv.animate({left:$('body').offset().left +cDiv.left + cDiv.width},'slow');
 }
 var setRDivTop = function(target, temp){
 	relateDiv.animate({top:HLBack.offset().top + temp/2 - target.height/2},'slow');
@@ -376,14 +393,15 @@ var triggerAnimate = function(unit,mode){
 
 	//2
 	var relateTarget = hasRDiv(expand);
+	var updatedCDiv = checkWrap(relateTarget);
 	
 	//3
-	setRDivLeft(relateTarget);
+	setRDivLeft(updatedCDiv);
 
 	//4
-	var targetLeft = initLeft - (relateTarget.width) /2;
+	// var targetLeft = initLeft - (relateTarget.width) /2;
 	(relateTarget.RLI == null) && (relateDiv.css('display') == 'none') ? scroll() 
-			: $('.contentWrap').animate({left:targetLeft},'slow', function(){
+			: $('.contentWrap').animate({left:updatedCDiv.left, width:updatedCDiv.width },'slow', function(){
 				scroll();
 			});
 

@@ -168,6 +168,7 @@ body {
 	/*border: 5px solid red;*/
 	width:98wh;
 	max-width:1024px;
+	min-width:600px;
 	/*margin:auto;*//* set position in specificOrganizeBODY to make it centerered*/
 
 	position: relative;
@@ -186,6 +187,7 @@ body {
 }
 
 .hlBackground{
+	width: 100%;
 	position:absolute;
 }
 
