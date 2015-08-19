@@ -1,0 +1,131 @@
+<html>
+<head>
+	<title>Present System Models</title>
+	<script type="text/x-mathjax-config"> 
+		MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+	</script> <!-- LaTex -->
+	<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+	<script src="http://code.jquery.com/jquery-latest.js" type="text/javascript"></script>
+ 	<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript"></script>
+	<link href="CAScroll.css" rel="stylesheet" type="text/css"/>
+	<script src="CAScroll.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="contentDiv">
+<ul class="L_1">
+
+<li>
+<div>Present System Models</div>
+</li><li>
+<div>Introduction</div>
+<ul class="L_2">
+<li><div><p>Present System is a software packages used for providing visual presentation support</p></div></li>
+<li><div><p>Three major functions:</p></div></li>
+<li><div><ul><li>An <strong>editor</strong> that allows contents to be inserted and manipulated</li><li>A <strong>method</strong> for combining the basic elements into an  animated object in a specific form</li><li>A <strong>player</strong> to display the object as a visual aid</li></ul></div></li>
+<li><div><p>Example -- Powerpoint</p></div></li>
+<li><div><ul><li>A WYSIWYG editor </li><li>Contents are arranged into slides</li><li>Styles and animations are set for sepate contents or a slide</li><li>A presentation mode used to display slides with contents.</li></ul></div></li>
+<li><div><p><img src="images/BasicElement.png" alt="Basic Element"/></p></div></li>
+<li><div><ul><li><p><strong>Content</strong> elements are the raw materials</p><ul><li>Plain Text, such as paragraphs, equation, list and table</li><li>Multimedia objects, or even some interactive plugin</li></ul></li><li><p><strong>Style</strong> elements are similar to properties used in CSS to define style information for a webpage.</p><ul><li>A property in CSS is treated as an element in the model</li><li>Styles will be applied to content as attributes. </li><li>A group of style elements make up a template and may be applied to a group of contents.</li></ul></li><li><p><strong>Animation</strong> element is defined as changing from one specific style to another, or a group to another.</p><ul><li>A group of animation make up a transition</li><li>Animations are usually applied on one conent element</li><li>Transitions are applied on groups of content elements</li></ul></li><li><p><strong>Action</strong> will trigger the application of animation and transition</p><ul><li>Actions help the user to navigate through the content elements during delivering.</li></ul></li></ul></div></li>
+</ul></li><li>
+<div>Task Model <img src="images/TaskModel.png" alt="Task Model" /></div>
+<ul class="L_2">
+<li><div><p>A task model describes the logical activities that have to be carried out in order to reach a goal.</p></div></li>
+<li>
+<div>The goal is to explain a topic via giving a presentation</div>
+</li><li>
+<div>The tasks are the logical activies derived from the phases of the workflow proposed by MSRA</div>
+<ul class="L_3">
+<li><div><p><strong>Planning</strong> : to collect the materials (content elements)  of the presentation.</p></div></li>
+<li><div><p><strong>Editing</strong> : to relate the basic elements to others ( based on some rules)</p></div></li>
+<li><div><ul><li>Dividing the contents into groups means relating content to other content based on structural info</li><li>Applying styles or templates means relating styles to contents</li></ul></div></li>
+<li><div><p><strong>Rehearsing</strong> : to adjustthe relations according to the actual situation</p></div></li>
+<li><div><p><strong>Delivering</strong> : to take actions to display the contents in the defined form</p></div></li>
+<li><div><p><strong>Sharing</strong> : to display the contents with their original structure in a different form</p></div></li>
+</ul></li><li>
+<div>The roles of user are different in different phases.</div>
+<ul class="L_3">
+<li><div><ul><li>The role in Former three phases is <strong>author</strong>.</li><li>Last two phases has two roles: one is the <strong>presenter</strong>, and the other is the <strong>audience</strong>.</li></ul></div></li>
+</ul></li>
+</ul></li><li>
+<div>Layered Model <img src="images/PresentSystemModel.png" alt="Present System Model" /></div>
+<ul class="L_2">
+
+
+
+<li>
+<div>The layered model is derived from the task model</div>
+<ul class="L_3">
+<li><div><p>It uses the basic elements to describe the logical activits in a more detailed level.</p></div></li>
+<li><div><p>The relationship between layers of model and phases of task model is not one-to-one.</p></div></li>
+<li><div><p>An user may work on multiple layers to complete the task in one phase.</p></div></li>
+<li><div><p>The implementation of one layer can affect the usability of different phases.</p></div></li>
+</ul></li><li>
+<div>Content Layer</div>
+<ul class="L_3">
+<li><div><p>How to collect the content elements is a basic issue in this layer.</p></div></li>
+<li><div><ul><li>Directly copy and paste </li><li>Import from other source</li></ul></div></li>
+<li><div><p>Only content elements are provided by the user.</p></div></li>
+<li><div><ul><li>All the other element are provided by the system</li><li>Support to create new elements by combining the ones provided by the system.</li></ul></div></li>
+</ul></li><li>
+<div>Structure Layer</div>
+<ul class="L_3">
+<li><div><p>How the structure information are described and kept in different phases should be considered in this layer.</p></div></li>
+<li><div><p>Inherent structural information</p></div></li>
+<li><div><p>Customized structural information</p></div></li>
+</ul></li><li>
+<div>Decoration Layer</div>
+<ul class="L_3">
+<li><div><p>How to apply the style to content should be considered in this layer.</p></div></li>
+<li><div><p>Template is widely used to simplify the way to apply styles.</p></div></li>
+</ul></li><li>
+<div>Animation layer</div>
+<ul class="L_3">
+<li><div><p>How to relate the animation to contents should be considered in this layer.</p></div></li>
+<li><div><p>Relate animation to a specific content element, so what relation the user sets are exactly the final effect the content will be presented.</p></div></li>
+<li><div><p>Related to the content in an abstract way: setting some rules about which group of the contents the animation will be applied to and when they will be applied.</p></div></li>
+<li><div><p>Some unique animation can help a present system provide some special features in different layers.</p></div></li>
+</ul></li><li>
+<div>Navigation Layer</div>
+<ul class="L_3">
+<li><div><p>Set actions in this layer to trigger the application of animation</p></div></li>
+<li><div><p>Help the user to navigate through the content elements.</p></div></li>
+</ul></li><li>
+<div>Context Layer</div>
+<ul class="L_3">
+<li><div><p>Factors that do not belong to the animated object, but may also influence the final dispaly effect</p></div></li>
+<li><div><p>E.g., Display screen size, Delivery time, Delivery purpose</p></div></li>
+</ul></li>
+</ul></li><li>
+<div>PowerPoint's Shortcommings</div>
+<ul class="L_2">
+<li><div><p>Inevitable Linearity</p></div></li>
+<li><div><ul><li>Structure Layer</li><li>Planning and Authoring Phase</li></ul></div></li>
+<li><div><p>Fix Size</p></div></li>
+<li><div><ul><li>Structure Layer</li><li>Decoration Layer</li><li>Authoring Phase</li></ul></div></li>
+<li><div><p>Strictly Sequentiality</p></div></li>
+<li><div><ul><li>Structure Layer</li><li>Navigation Layer</li><li>Delivery Phase</li></ul></div></li>
+</ul></li><li>
+<div>Design Principle</div>
+<ul class="L_2">
+<li><div><p>For easy planning, the system may provide some tools for collecting contents</p></div></li>
+<li><div><ul><li>Import from some formated soucre</li><li>Recommend some related items</li></ul></div></li>
+<li><div><p>For easy editing, template may be used for combing different elements</p></div></li>
+<li><div><ul><li>Design Templates based on the inherent structure of the contents</li><li>Allow to apply style templates on a group of contents in same level</li><li>Provide layout template for arranging the contents in a canvas</li></ul></div></li>
+<li>
+<div>For better delivering, structure may be used for defineing new actions or providing meanfuling combination method</div>
+<ul class="L_3">
+<li><div><p>Prezi support dynamic navigation via Smart Zooming based on frames</p></div></li>
+<li><div><ul><li>Frame is a customized struture unit</li><li>Click an object to Zoom in : Prezi finds the best possible view for the clicked specific object</li><li>Press 'Down' to Zoom out :  Prezi focus on the closest frame that is larger than the frame currently in focus. </li></ul></div></li>
+<li><div><p>Beamer can generate some slides with structural information based on its tags</p></div></li>
+</ul></li>
+</ul></li><li>
+<div>Conclusion</div>
+<ul class="L_2">
+<li><div><p>Primary works</p></div></li>
+<li><div><ul><li>Summary the basic elements</li><li>Propose a task model to descibe the logical activies of present system</li><li>Propose a layed model to explain the mechanism of present system</li></ul></div></li>
+<li><div><p>Contribution of the two models</p></div></li>
+<li><div><ul><li>Help to discuss the differences between various present systems clearly</li><li>Help to propose some design principles</li><li>Simplify the way to implement or improve features of the present system</li></ul></div></li>
+</ul></li>
+</ul>
+</div></body>
+</html>
