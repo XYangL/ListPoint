@@ -50,13 +50,18 @@ var init = function (){
 
 var specificOrganizeBODY = function(){
 	$('body >*').wrapAll("<div class='container' />");
+
+	/* div#above to show image in a popup layer */
+	$('body').append($('<div/>',{id: 'above', 'style':'display:none;'}));
+	$('#above').append($('<div/>'));
+
 	root.wrap("<div class='contentWrap' />");
 
 	root.prepend('<p id="preDiv" style="height: 35vh;"> </p>');
 	root.append('<p id="postDiv" style="height: 65vh;"> </p>');
 
 	/*3. Static Highilght Background*/
-    /* Add div.hlBackground to highlight in Blue */
+	/* Add div.hlBackground to highlight in Blue */
 	HLBack = $('<div class="hlBackground"></div>'); // HLBack = $('.hlBackground'); 
 	HLBack.insertAfter(root);
 
@@ -319,7 +324,7 @@ var setRDivLeft = function(target, cDiv){
 	} else {// location == right
 		newLeft = $('.container').offset().left +cDiv.left + cDiv.width -2;
 	}
-	
+
 	newLeft = newLeft< - parseInt(relateDiv.css('margin-left'))*2 ? - parseInt(relateDiv.css('margin-left'))*2 : newLeft;
 	relateDiv.css('left', newLeft);// relateDiv.animate({left:newLeft},'slow');
 }
@@ -601,6 +606,22 @@ var main = function(){
 
 		triggerAnimate(unit,'click');
 		index += unit;
+	});
+
+	/* Action : show item/image in a popup layer if clicked in .relateDiv */
+	relateDiv.find('div>div.active').click(function(event) {
+		if ($(this).attr('id').match(/^IMG:/)) {
+			var url = $(this).find('img').attr('src');
+			$('#above >div').first().replaceWith($('<div/>').append($('<img/>',{src: url})));
+
+			var IMG = $('#above >div >img');
+			var maxW = $(window).width();
+			var maxH = $(window).height();
+			var factor = 0.95;
+			scale(IMG, maxW, maxH, factor);
+			
+			$('#above').bPopup({position: ['auto', 'auto'],amsl:0});
+		};
 	});
 
 };

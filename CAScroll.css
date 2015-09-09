@@ -233,3 +233,9 @@ body {
     overflow: hidden;
     background-repeat: no-repeat;
 }
+
+/*Style for popup to show image */
+#above >div >img{
+	background-color: white;
+	display:inline-block;
+}

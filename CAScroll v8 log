@@ -1,4 +1,19 @@
 ======
+8.4 : Support to show image in a popup layer via click it in relateDiv
+======
+1. CAScroll.css: set styles for popup div#above
+
+2. jquery.bpopup.min.js: used for show/hide div#above
+
+3. CAScroll.js :
+- Append div#above to body in specificOrganizeBODY(); !! not wrap in .container
+- Add action to show in triggerAnimate()
+	* append clicked img to div#above
+	* call scale(IMG, maxW, maxH, factor) to set size of image in div#above
+	* call $('#above').bPopup() to show image
+
+
+======
 8.3 : Support to show image in bottom
 ======
 1. CAScroll.css: set margin in all 4 directions for .relateDiv
