@@ -12,12 +12,14 @@ var initWidth = 0;
 var rDivWidthWrap =0;
 var rDivHeightWrap =0;
 
+var headDiv = null;
+
 var init = function (){
 	root = $('div.contentDiv');
 	
 	specificOrganizeBODY();
 
-	divs = $("li>div:first-child");
+	divs = root.find("li>div:first-child");
 	num = divs.size();
 
 	/*0. Scrollable: to support scroll action : Add id to every item for easy Navigation */
@@ -32,7 +34,7 @@ var init = function (){
 	});
 	
 	/*2. Show & Hide : init every item */
-	$('.contentDiv li>ol, .contentDiv li>ul').hide();
+	root.find('li>ol,li>ul').hide();
 
 	/* init 1st HL target */
 	var firstHL = divs.eq(index);
@@ -46,6 +48,8 @@ var init = function (){
 	/*6. User Defined Relationship : init .relateDiv position */
 	initRDiv();
 
+	/*7. initHDiv() : hide items in headDiv except the 1st home/title one*/
+	headDiv.find('li:not(:first)').hide();
 };
 
 var specificOrganizeBODY = function(){
@@ -101,7 +105,7 @@ var specificOrganizeBODY = function(){
 			$(this).remove();
 			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index), 'class': 'active'}).append($(this));
 
-		/* 	NO Images marked with # in mdSrc of new syntax, which originally parsered to li>div>img without <p>*/
+		/* 	NO 'li>div>img without <p>' parsered from mdSrc in new syntax */
 
 			/* If authored as shown bottom, then addClass(bottom) to .relateDiv>div>div*/
 			if (imgParentDiv.hasClass('bottom')){
@@ -114,23 +118,12 @@ var specificOrganizeBODY = function(){
 
 	relateDiv.insertAfter(root.parent());
 
-	/*7. Other special requirement of CAScroll on DOM structure */
-	/* convert ol>li to div+ol>li>div:first-child */
-	ol = root.find('ol');
-	ol.children().wrapInner("<div></div>");
-	for (var i = ol.size() ; i >= 0; i--){
-	 	target = ol.eq(i).parent().parent();
-		target.prev().append(ol.eq(i));
-		target.remove();
-	}
-	
-	/* set level L_* for  ol */
-	ol = root.find('ol');
-	ol.each(function(){
-		var level = $(this).parent().parent().attr('class');
-		level = 'L_'.concat(parseInt(level.substr(-1))+1);
-		$(this).addClass(level);
-	});
+	/*7 headDiv to show elements in deep path from root/title to .highlight*/
+	headDiv = $('<div/>',{'class': 'headDiv'})
+	headDiv.insertBefore(root.parent());
+	headDiv.append($('<ul><li target="#item0"><div><span class="ui-icon ui-icon-home"></span> HOME</div></li> <li></li> <li></li> <li></li></ul>'));
+
+	/*8. Other special requirement of CAScroll on DOM structure */
 
 	/* List items marked with - in mdSrc, parsered to li>div>ul 
 		Moved as children of previous li>div*/
@@ -140,24 +133,8 @@ var specificOrganizeBODY = function(){
 		liPareTemp.prev().children().append($(this));
 		liPareTemp.remove();		
 	});
-	
-	/* wrap title = ul>li>div:first-child with <p> */
-	var firstTitle = root.find('ul>li>div:first-child').first();
-	firstTitle.html("".concat("<p>",firstTitle.html(),"</p>"));
 
-	root.find('li>div~ul').parent().children(':first-child').each(function(index, el) {// div
-		if($(this).has('p:first-child').size()==0){
-			$(this).wrapInner('<p/>'); //console.log($(this).html());
-		}		
-	});
-
-	/* Items marked with # in mdSrc which has no details, parsered to li>div directly without <p> 
-		wrap item with <p>*/
-	root.find('li>div:first-child').each(function(){
-		if($(this).has('p').size()==0){
-			$(this).wrapInner('<p/>');
-		}
-	});
+	/* No 'ol>li' or 'li>div without <p>' parsered from mdSrc in new syntax*/
 
 	/* Find and set ID for title, having special style setting via css */
 	$('.L_1 >li:first').attr('id','title');
@@ -396,6 +373,29 @@ var setHeight = function(object, mode){
 	return temp;
 }
 
+var updateHeadDiv = function(){
+	/*	Update the elements of path in headDiv when .highlight changed
+		- !! Alwarys called after updateHLB() 
+		- Need to Limit the length for every li item in headDiv*/
+	var headItem = $('.highlight').parents('ul').prev().prev();
+	headItem = $(headItem.get().reverse()); //console.log(headItem.size());
+
+	var maxWidth = $('.headDiv >ul').width() - $('.headDiv >ul >li:first').width();// Limit the length
+	for (var i = 2; i <5; i++) {
+		var temp = headDiv.find('li:nth-child('+i+')');
+		if (headItem.eq(i-2).html() != null) {
+			console.log(headItem.eq(i-2).attr('id'));
+			temp.attr('target', '#'+headItem.eq(i-2).attr('id'));
+			temp.html('<div>'+headItem.eq(i-2).text()+'</div>');
+			temp.children().css('max-width',  maxWidth*0.5); // Limit the length
+			maxWidth = maxWidth - temp.width();
+			temp.effect('slide', { direction: 'left', mode: 'show' }, 'slow');
+		} else {
+			temp.effect('slide', { direction: 'left', mode: 'hide' }, 'slow');
+		}
+	};
+}
+
 var triggerAnimate = function(unit,mode){
 	if (mode == 'more') {
 		/* if mode == more, then unit==0, so expand = #item(index+0) = current highlight*/
@@ -504,6 +504,8 @@ var triggerAnimate = function(unit,mode){
 		//10 
 		updateHLB(expand, fullH);
 
+		updateHeadDiv();
+
 		//11/* 4. Background : on related items */
 		$('.HLChildLevel').removeClass('HLChildLevel');
 		expand.nextAll('ol,ul').addClass('HLChildLevel');//ol
@@ -540,7 +542,9 @@ var main = function(){
 	// 	$('.hlBackground').css('background', '#fff');
 	// });
 
-	/* Action :  Relate the action to key */
+	/*	Action:
+		Array key - change .highlight 
+		Space key - show or hide .passive */
 	$(document).keydown(function(key) {	
 		var unit = 0, mode = 'key';	
 		switch(parseInt(key.which,10)) {
@@ -598,8 +602,8 @@ var main = function(){
 		// return false; // disable scroll via arrow key
 	});
 
-	// /* Action :  Relate the action to click */
-	$("li>div:first-child").click(function(event) {
+	/* Action-click : change .highlight if clicking item in .contentDiv */
+	$(".contentDiv li>div:first-child").click(function(event) {
 		/* Act on the event */
 		var expandID = parseInt($(this).attr('id').replace("item", ""));
 		unit = expandID-index;// console.log(expandID, unit);
@@ -608,7 +612,7 @@ var main = function(){
 		index += unit;
 	});
 
-	/* Action : show item/image in a popup layer if clicked in .relateDiv */
+	/* Action-click : show item/image in a popup layer if clicking it in .relateDiv */
 	relateDiv.find('div>div.active').click(function(event) {
 		if ($(this).attr('id').match(/^IMG:/)) {
 			var url = $(this).find('img').attr('src');
@@ -622,6 +626,12 @@ var main = function(){
 			
 			$('#above').bPopup({position: ['auto', 'auto'],amsl:0});
 		};
+	});
+
+	/* Action-click : change .highlight if clicking item in .headDiv */
+	headDiv.find('ul>li').click(function(event) {
+		console.log($(this).attr('target'));
+		$($(this).attr('target')).click();
 	});
 
 };

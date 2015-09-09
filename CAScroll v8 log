@@ -1,4 +1,23 @@
 ======
+8.5 : Add DIV.headDiv to show items in the deep path from root/title to .highlight
+======
+1. CAScroll.css: set styles for items in .headDiv
+
+2. crumbs.gif: background of every li>div
+
+3. CAScroll.js: show items of path in .headDiv
+- Add global var headDiv
+- update a few selectors due to newly added div.headDiv
+- Set headDiv.html() and insert before root/.contentDiv
+- Hide li>item except 1st title to init headDiv at the end of init()
+- Add updateHeadDiv() : update the items of path when .highlight changed;
+- Call updateHeadDIv() after every upadateHLB() in triggerAnimate(mode!='more')
+- Add action for clicking item in .headDiv to change .highlight
+
+4. CAScroll.js: delete some process due to new syntax of mdSrc
+
+
+======
 8.4 : Support to show image in a popup layer via click it in relateDiv
 ======
 1. CAScroll.css: set styles for popup div#above

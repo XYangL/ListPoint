@@ -239,3 +239,44 @@ body {
 	background-color: white;
 	display:inline-block;
 }
+
+/*Style for HeadDiv*/
+.headDiv{
+	font-size: 125%;
+	font-weight: 600;
+}
+
+.headDiv ul{
+	list-style-type:none;
+	padding:0;
+	margin:0;
+
+	border:1px solid #dedede;
+	height:2.3em;
+}
+
+.headDiv li {
+	list-style-type:none;
+	padding:0;
+	margin:0;
+
+	float:left;
+	line-height:2.3em;
+	padding-left:.75em;
+	color:#777;
+}
+
+.headDiv li div {
+	display:block;
+	padding:0 15px 0 0;
+	background:url("crumbs.gif") no-repeat right center;
+	
+	height:2.3em;
+	overflow:hidden;
+	white-space:nowrap;
+	text-overflow:ellipsis;
+}
+
+.headDiv li div:hover {
+	color:black;
+}
