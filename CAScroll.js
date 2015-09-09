@@ -57,10 +57,12 @@ var specificOrganizeBODY = function(){
 	HLBack = $('<div class="hlBackground"></div>'); // HLBack = $('.hlBackground'); 
 	HLBack.insertAfter(root);
 
-	/*6. User Defined Relationship */
+	/*6. User Defined Relationship : Init relateDiv, fill it, & inset into DOM */
+	relateDiv = $("<div/>", {class: "relateDiv"});
+	relateDiv.append( $('<div/>'));
+
 	var fillRelateDiv = function( RDiv ){
-		// S1: Get Footnote, remove from DOM & insert into relateDiv
-		// $('.footnote-ref').text('');
+		/*S1: Get Footnote, remove from DOM & insert into relateDiv */
 		var FN = $('div.footnotes');//console.log(FN.size());
 		FN.remove();
 		FN.find('ol>li').each(function(){
@@ -76,65 +78,28 @@ var specificOrganizeBODY = function(){
 		/* Append mark to items with passive/more contents*/
 		$('.footnote-ref').each(function(index, el) {
 			var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-passive'});
-			tempLink.html('&#8649');
+			tempLink.html(' <span class="ui-icon ui-icon-circle-plus"></span>');
 			tempLink = $('<sub/>').append(tempLink);
 			$(this).parent().replaceWith(tempLink);
 		});
 
-		// S2: Get Img, replace it with des-list in DOM & insert img into relateDiv
+		/*S2: Get Img, replace it with des-list in DOM & insert img into relateDiv */
 		var IMG = $('.contentDiv li>div>p>img')
 		
-		/* Add shrink description for img*/
 		IMG.each(function(index, value) {
 			var imgParentDiv = $(this).parent().parent();
-			var level = imgParentDiv.parent().parent().attr('class');
-			level = 'L_'.concat(parseInt(level.substr(-1))+1);
-			
-			var linkSUB = '<sub id=""><a href="#IMG:NO" class="footnote-active"></a></sub>'.replace("NO", index);
-			var desUL = imgParentDiv.parent().next().find('div>ul');
-			if (desUL.size()>0) {
-				desUL = desUL.eq(0);
-				desUL.addClass(level);
-				desUL.children().append(linkSUB);
-				desUL.children().wrapInner('<p></p>');
-				desUL.children().wrapInner('<div></div>');
-				desUL.parent().parent().remove();// li
-				desUL.insertAfter(imgParentDiv);
-			};
-
-			$(this).parent().html($(this).attr('alt')+ " <b>[img]</b>"	+  linkSUB );
+			var linkSUB = '<sub><a href="#IMG:NO" class="footnote-active"><span class="ui-icon ui-icon-image"></span></a></sub>'.replace("NO", index);
+			$(this).parent().html($(this).parent().text() + '<b>'+$(this).attr('alt')+'</b> '+  linkSUB );
 			$(this).remove();
 			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index), 'class': 'active'}).append($(this));
-			RDiv.children(':first').append(temp);		
-		});
 
-		/* Images marked with # in mdSrc, parsered to li>div>img without <p>
-			Keep original title, no description, and move img to relateDiv */
-		var IMGTitle = $('.contentDiv li>div>img')
-		IMGTitle.each(function(index, value) {
-			var imgParentDiv = $(this).parent();
-			
-			var linkSUB = '<sub id=""><a href="#IMG:NO" class="footnote-active"></a></sub>'.replace("NO", index+IMG.size());
-			imgParentDiv.append(linkSUB);
-			var childPs = imgParentDiv.next().find('li >div');
-			if (childPs.size()>0) {
-				childPs.append(linkSUB);
-			};
-			// $(this).remove();
-			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index+IMG.size()), 'class': 'active'}).append($(this));
+		/* 	NO Images marked with # in mdSrc of new syntax, which originally parsered to li>div>img without <p>*/
+
 			RDiv.children(':first').append(temp);		
 		});
 	}
-	/* Init relateDiv, fill it, & inset into DOM*/
-	// 0.0 init RelateDiv
-	relateDiv = $("<div/>", {class: "relateDiv"});
-	relateDiv.append( $('<div/>'));
-
-	// 0.1 Get Footnote & Replace
-	// 0.2 Get Img & Replace
 	fillRelateDiv(relateDiv);
 
-	// 0.3 Add RelateDiv to body
 	relateDiv.insertAfter(root.parent());
 
 	/*7. Other special requirement of CAScroll on DOM structure */

@@ -191,17 +191,46 @@ body {
 	position:absolute;
 }
 
-/*Set Style for Title*/
+/*Style for Title*/
 #title {
 	font-size:150%;
 	list-style-type:none;
 	text-align:center;
 }
 
-/*Avoid mark work as link*/
+/*Style for realteDiv-passive*/
 .footnote-passive{
 	text-decoration:none;
 	pointer-events: none;
 	cursor: default;
 	padding-left: 15px;
+}
+
+/*Style for icons*/
+.ui-icon-home {
+    background-position: 0 -112px;
+}
+.ui-icon-circle-plus {
+    background-position: 0 -192px;
+}
+.ui-icon-plusthick {
+    background-position: -32px -128px;
+}
+.ui-icon-image {
+    background-position: -208px -128px;
+}
+
+.ui-icon, .ui-widget-content .ui-icon {
+    background-image: url("ui-icons.png");
+}
+
+.ui-icon {
+    width: 16px;
+    height: 16px;
+    zoom:1.1;
+
+    display: inline-block;
+    /*text-indent: -99999px;*/
+    overflow: hidden;
+    background-repeat: no-repeat;
 }

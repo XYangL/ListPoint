@@ -1,4 +1,19 @@
 ======
+8.2 : New marker for image and 'passive' via jQuery UI icon
+======
+1. CAScroll.css : add style for ui-icon
+
+2. ui-icons.png : background-image of ui-icon
+
+3. CAScroll.js - fillRelateDiv()
+- Move the defination of fillRelateDiv() just beofre it is called
+- Use marker 'ui-icon-circle-plus' after item having 'passive'
+- Replace image item with attr('alt') + 'ui-icon-image'
+- Delete special process for img without <p>
+- Revise some comments
+
+
+======
 8.1 : 3rd key 'space' to show more content passively in the right pane 
 ======
 (Specify passive contents in mdSrc as footnotes)
