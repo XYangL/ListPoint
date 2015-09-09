@@ -1,4 +1,42 @@
 ======
+8.3 : Support to show image in bottom
+======
+1. CAScroll.css: set margin in all 4 directions for .relateDiv
+
+2. CAScroll.js: Basic setting for detecting bottom and later setting on position/size
+- Add global var rDivWidthWrap for calculating .realteDiv size to update size of .contentDiv and position.left of .relateDiv
+- Add global var rDivHeightWrap for calculating .realteDiv size to update position.top of .relateDiv
+- Insert addClass(bottom) to .relateDiv>div>div if authored to be shown in bottom
+- Rename checkWrap () as configWrap(), returned is used by $('.contentWrap').animate() and setRDivLeft()
+- Add scale(IMG, maxW, maxH, factor) used to set size of .relateDiv>div>div.active>img in initRDiv()
+
+3. CAScroll.js: Different from 'right', add new way for 'bottom' to set size and position for .relateDiv>div>div/target
+- configWrap()	: only .relateDiv>right may change margin-left and width of .contentDiv
+- initRDiv() 	: 
+	* set location=right/bottom to div/target 
+	* based on differnt valid spaces of right/bottom to init the size for every .realteDiv>div>div
+	* init global var rDivWidthWrap and rDivHeightWrap
+- setRDivLeft()	: based on target=hasRDiv() and cDiv=configWrap()
+- setRDivTop()	: based on target=hasRDiv() and HLHeight=setHeight()
+- hideRDiv()	: check location?=right/bottom before hide .relateDiv
+- showRiv()		: 
+	* reset .hlSupport and hide/show target div
+	* check location?=right/bottom before show .relateDiv
+
+4. CAScroll.js: Clarify hide and show on .relateDiv
+- Merge hasRDiv(expand) and hasMore(highlight) into hasRDiv(item, mode)
+	* 'active' mode refers to original hasRDiv(expand), and 'passive' refers to original hasMore(highlight)
+	* only return target itself
+	* NOT revise .hlSupport, hide/show target div or hideRDiv() inside hasRDiv()
+- Delete hasMore()
+- Update tiggerAnimate()
+	* update action to hide/show realteDiv>div>div.passive if mode='more'
+	* move the defination of scroll() just beofre it is called
+	* call hideRDiv() outside hasRDiv()
+	* check if has activeTarget, then call setRDivLeft(), setRDivTop(), and showRDiv() one by one
+
+
+======
 8.2 : New marker for image and 'passive' via jQuery UI icon
 ======
 1. CAScroll.css : add style for ui-icon
