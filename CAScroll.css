@@ -80,6 +80,24 @@ body {
 	
 	transition: height 1s, left 1s, width 1s;
 	z-index: -1;
+
+	-webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+
+	/*blue*/
+	background:#d9edf7;
+	border: 1px solid rgba(82,168,236,.8);
+	-webkit-box-shadow: 0 0 8px rgba(82,168,236,.6);
+	box-shadow: 0 0 8px rgba(82,168,236,.6); 
+
+	/*yellow #fcf8e3 = rgba(252,248,227) #F6DC2C = rgba(246,220,44)*/
+	/*	background:#fcf8e3;
+	border: 1px solid rgba(246,220,44,.8);
+	-webkit-box-shadow: 0 0 8px rgba(246,220,44,.6);
+	box-shadow: 0 0 8px rgba(246,220,44,.6); */
+
+	/*	background:#FCF0AD;*/
+		/*background:#FFEF00;*/
 }
 
 
@@ -96,7 +114,7 @@ body {
 
 /*5. Opacity*/
 .contentDiv li>ul >li>div, .contentDiv li>ol >li>div{
-	opacity:0.5;
+	opacity:0.3;
 }
 .contentDiv li>ul >li>div.highlight, .contentDiv li>ol >li>div.highlight{
 	opacity:1;
@@ -138,7 +156,7 @@ body {
 
 /*Styels related to positoin & width*/
 .relateDiv >*{
-  padding: 9px 14px;
+  padding: 10px;
   background:rgba(247,247,249,0.25);/**/
 }
 
@@ -202,7 +220,9 @@ body {
 	text-decoration:none;
 	pointer-events: none;
 	cursor: default;
-	padding-left: 15px;
+}
+.passive{
+	overflow:scroll;
 }
 
 /*Style for icons*/
@@ -264,12 +284,14 @@ body {
 	line-height:2.3em;
 	padding-left:.75em;
 	color:#777;
+	background:url("crumbs.gif") no-repeat right center;
+	height:2.3em;
 }
 
 .headDiv li div {
 	display:block;
 	padding:0 15px 0 0;
-	background:url("crumbs.gif") no-repeat right center;
+	/*background:url("crumbs.gif") no-repeat right center;*/
 	
 	height:2.3em;
 	overflow:hidden;
@@ -279,4 +301,18 @@ body {
 
 .headDiv li div:hover {
 	color:black;
+}
+
+/*Differ items in headDiv based on its level */
+.headDiv li#L2 div{
+	font-size: 90%;
+	font-weight: 500;
+}
+.headDiv li#L3 div{
+	font-size: 80%;
+	font-weight: 400;
+}
+.headDiv li#L4 div{
+	font-size: 75%;
+	font-weight: 300;
 }

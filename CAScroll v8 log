@@ -1,4 +1,22 @@
 ======
+8.6 : Use style to Differ items: different level in headDiv ; Has discussed v.s. not discussed
+======
+CAScroll.css: 
+- Try highlight in different style
+- set different font-size and weight to differ items in headDiv
+
+- same padding in 4 direction of .relateDiv
+- no padding-left for .footnote-passive
+- make .relateDiv scrollable with long .passive
+
+CAScroll.js: 
+- Differ li>items in headDiv for applying different style
+- Set Different opacity for has discussed and not discussed
+
+- revise comments and delete console.log()
+
+
+======
 8.5 : Add DIV.headDiv to show items in the deep path from root/title to .highlight
 ======
 1. CAScroll.css: set styles for items in .headDiv

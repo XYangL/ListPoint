@@ -64,9 +64,8 @@ var specificOrganizeBODY = function(){
 	root.prepend('<p id="preDiv" style="height: 35vh;"> </p>');
 	root.append('<p id="postDiv" style="height: 65vh;"> </p>');
 
-	/*3. Static Highilght Background*/
-	/* Add div.hlBackground to highlight in Blue */
-	HLBack = $('<div class="hlBackground"></div>'); // HLBack = $('.hlBackground'); 
+	/*3. Static Highilght Background : Add div.hlBackground to highlight in Blue */
+	HLBack = $("<div/>", {class: "hlBackground"});
 	HLBack.insertAfter(root);
 
 	/*6. User Defined Relationship : Init relateDiv, fill it, & inset into DOM */
@@ -105,7 +104,7 @@ var specificOrganizeBODY = function(){
 			$(this).remove();
 			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index), 'class': 'active'}).append($(this));
 
-		/* 	NO 'li>div>img without <p>' parsered from mdSrc in new syntax */
+			/* 	NO 'li>div>img without <p>' parsered from mdSrc in new syntax */
 
 			/* If authored as shown bottom, then addClass(bottom) to .relateDiv>div>div*/
 			if (imgParentDiv.hasClass('bottom')){
@@ -121,7 +120,9 @@ var specificOrganizeBODY = function(){
 	/*7 headDiv to show elements in deep path from root/title to .highlight*/
 	headDiv = $('<div/>',{'class': 'headDiv'})
 	headDiv.insertBefore(root.parent());
-	headDiv.append($('<ul><li target="#item0"><div><span class="ui-icon ui-icon-home"></span> HOME</div></li> <li></li> <li></li> <li></li></ul>'));
+	/*Differ items in headDiv based on its level */
+	headDiv.append($('<ul><li target="#item0"><div><span class="ui-icon ui-icon-home"></span> HOME</div></li>'+
+		' <li id="L2"></li>'+' <li id="L3"></li>'+ ' <li id="L4"></li></ul>'));
 
 	/*8. Other special requirement of CAScroll on DOM structure */
 
@@ -171,7 +172,7 @@ var configWrap = function(target){
 	var left = initLeft;
 	var width = initWidth;
 
-	/* Only .relateDiv>target with location=right may change margin-left andwidth of .cotentDiv*/
+	/* Only .relateDiv>target with location=right may change margin-left and width of .cotentDiv */
 	if (target != null && target.attr('location') == 'right') {
 		var rDivWnew = target.width()+rDivWidthWrap;
 		if (target.attr('id').match(/^IMG:/)){
@@ -188,7 +189,7 @@ var configWrap = function(target){
 }
 
 var scale = function(IMG, maxW, maxH, factor){
-	/* set width&height of IMG limited by different valid sizes and requirements/factor*/
+	/* set width&height of IMG limited by different valid sizes and requirements/factor */
 	var origW = IMG.get(0).naturalWidth; 
 	var origH = IMG.get(0).naturalHeight;
 	var ratio = origW/origH;
@@ -228,7 +229,7 @@ var initRDiv = function () {
 			$(this).css('height', $(this).height()); // ?
 
 		} else { //hasClass('active')
-			/* SET $(this).height/width for every image-active in relateDiv via img.onload()*/
+			/* SET $(this).height/width for every image-active in relateDiv via img.onload() */
 			if ( $(this).attr('id').match(/^IMG:/)) {
 				$(this).children().load(function() { 					
 					var IMG = $(this); //img
@@ -310,14 +311,12 @@ var setRDivTop = function(target, HLHeight){
 	var newTop = 0;
 	if (target.attr('location') == 'bottom'){
 		newTop = HLBack.offset().top + HLHeight;
-		console.log(HLBack.position().top, HLBack.offset().top)
 	} else {// location == right
 		var rDivWnew = (target.height()+rDivHeightWrap);
 		if (target.attr('id').match(/^IMG:/)){
 			rDivWnew = (target.children().height()+rDivHeightWrap);
 		}
 		newTop = HLBack.offset().top + HLHeight/2 - rDivWnew/2;
-		console.log(rDivWnew, target.height(), target.children().height());
 	}
 
 	newTop = newTop< - parseInt(relateDiv.css('margin-top')) ? - parseInt(relateDiv.css('margin-top')) : newTop;
@@ -384,7 +383,6 @@ var updateHeadDiv = function(){
 	for (var i = 2; i <5; i++) {
 		var temp = headDiv.find('li:nth-child('+i+')');
 		if (headItem.eq(i-2).html() != null) {
-			console.log(headItem.eq(i-2).attr('id'));
 			temp.attr('target', '#'+headItem.eq(i-2).attr('id'));
 			temp.html('<div>'+headItem.eq(i-2).text()+'</div>');
 			temp.children().css('max-width',  maxWidth*0.5); // Limit the length
@@ -512,6 +510,10 @@ var triggerAnimate = function(unit,mode){
 
 		$('.HLSameLevel').removeClass('HLSameLevel');
 		expand.parent().parent().addClass('HLSameLevel');//ol
+
+		// Different opacity for has discussed and not discussed;
+		shrink.css('opacity', '0.7');
+		expand.css('opacity', '1');
 		
 		//12/*0. Scrollable*/
 		var reviseTop = expandTop - shrinkTop + slideDownHeight - slideUpHeight;
@@ -630,7 +632,6 @@ var main = function(){
 
 	/* Action-click : change .highlight if clicking item in .headDiv */
 	headDiv.find('ul>li').click(function(event) {
-		console.log($(this).attr('target'));
 		$($(this).attr('target')).click();
 	});
 
