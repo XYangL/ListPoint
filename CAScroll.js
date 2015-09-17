@@ -19,6 +19,9 @@ var init = function (){
 	
 	specificOrganizeBODY();
 
+	/*Reset height of root, since the inserted headDiv occupy the top part of window*/
+	root.height(root.height() - headDiv.outerHeight(true));
+
 	divs = root.find("li>div:first-child");
 	num = divs.size();
 
@@ -61,8 +64,9 @@ var specificOrganizeBODY = function(){
 
 	root.wrap("<div class='contentWrap' />");
 
-	root.prepend('<p id="preDiv" style="height: 35vh;"> </p>');
-	root.append('<p id="postDiv" style="height: 65vh;"> </p>');
+	/*Height of preDiv decide the position.top of .highlight*/
+	root.prepend('<p id="preDiv" style="height: 25vh;"> </p>');
+	root.append('<p id="postDiv" style="height: 75vh;"> </p>');
 
 	/*3. Static Highilght Background : Add div.hlBackground to highlight in Blue */
 	HLBack = $("<div/>", {class: "hlBackground"});
@@ -72,8 +76,9 @@ var specificOrganizeBODY = function(){
 	relateDiv = $("<div/>", {class: "relateDiv"});
 	relateDiv.append( $('<div/>'));
 
+	var IDREG = /fn:([a-zA-z]*):([0-9]*)/;
+	/*6-1: Replace Footnote into contents in RDiv */
 	var fillRelateDiv = function( RDiv ){
-		/*S1: Get Footnote, remove from DOM & insert into relateDiv */
 		var FN = $('div.footnotes');//console.log(FN.size());
 		FN.remove();
 		FN.find('ol>li').each(function(){
@@ -82,33 +87,19 @@ var specificOrganizeBODY = function(){
 			$(this).find('.footnote-backref').remove();
 			lastP = $(this).children('p:last');
 			if (!lastP.html().trim()){ lastP.remove(); }
-			var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'passive'}).append($(this).html());
-			RDiv.children(':first').append(temp);
-		});
-		
-		/* Append mark to items with passive/more contents*/
-		$('.footnote-ref').each(function(index, el) {
-			var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-passive'});
-			tempLink.html(' <span class="ui-icon ui-icon-circle-plus"></span>');
-			tempLink = $('<sub/>').append(tempLink);
-			$(this).parent().replaceWith(tempLink);
-		});
 
-		/*S2: Get Img, replace it with des-list in DOM & insert img into relateDiv */
-		var IMG = $('.contentDiv li>div>p>img')
-		
-		IMG.each(function(index, value) {
-			var imgParentDiv = $(this).parent().parent();
-			var linkSUB = '<sub><a href="#IMG:NO" class="footnote-active"><span class="ui-icon ui-icon-image"></span></a></sub>'.replace("NO", index);
-			$(this).parent().html($(this).parent().text() + '<b>'+$(this).attr('alt')+'</b> '+  linkSUB );
-			$(this).remove();
-			var temp = $('<div/>',{id: 'IMG:NO'.replace("NO", index), 'class': 'active'}).append($(this));
-
-			/* 	NO 'li>div>img without <p>' parsered from mdSrc in new syntax */
-
-			/* If authored as shown bottom, then addClass(bottom) to .relateDiv>div>div*/
-			if (imgParentDiv.hasClass('bottom')){
-				temp.addClass('bottom');
+			/*Based on FN type, set active/passive and update content.html()*/
+			var FNType = IDREG.exec($(this).attr('id'))[1];
+			switch(FNType){
+				case 'hide':
+					var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'passive'}).append($(this).html());
+					break;
+				case 'img':
+					var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'active'}).append($(this).find('img').clone());
+					break;
+				default: // 'tip' & 'one'
+					var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'active'}).append($(this).html());
+					break;
 			}
 			RDiv.children(':first').append(temp);		
 		});
@@ -116,6 +107,49 @@ var specificOrganizeBODY = function(){
 	fillRelateDiv(relateDiv);
 
 	relateDiv.insertAfter(root.parent());
+
+	/*6-2: add mark and set location to items has relatedItems
+		!! must afet relateDiv is inserted to root*/
+	// root.find('li>div').has('.footnote-ref')
+	$('.footnote-ref').each(function(index, el) {
+		var FNType = IDREG.exec($(this).attr('href'))[1];
+		var relateFN = $($(this).attr('href').replace(/:/g, '\\:'));
+		switch(FNType){
+			case 'hide':
+				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-passive'});
+				tempLink.html(' <span class="ui-icon ui-icon-circle-plus"></span>');
+				relateFN.attr('location','right');
+				break;
+			case 'img':
+				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-active'});
+				tempLink.html('<span class="ui-icon ui-icon-image"></span>');
+				$(this).parents('li>div').hasClass('bottom')? relateFN.attr('location','bottom'):relateFN.attr('location','right');
+				if ($(this).parents('li>div').hasClass('des')) {
+					var tempDes = $(this).parents('li>div');
+					tempDes.parent().find('li >div:nth-child(1)>p, li >div:nth-child(1)>ul>li:last-child').append($('<sub/>').append(tempLink.clone()));
+				};
+				break;
+			case 'tip':
+				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-active'});
+				relateFN.attr('location','right');
+				break;
+			case 'one':
+				var tempLink = null;
+				$(this).parents('li>div').append(relateFN.children());
+				$(this).parent().replaceWith(null);
+				relateFN.remove();
+				break;
+			default: // 'tip' & 'one' & img
+				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-active'});
+				relateFN.attr('location','right');
+				break;
+		}
+		
+		if (tempLink) {
+			tempLink = $('<sub/>').append(tempLink);
+			$(this).parent().replaceWith(tempLink);			
+		};
+	});
 
 	/*7 headDiv to show elements in deep path from root/title to .highlight*/
 	headDiv = $('<div/>',{'class': 'headDiv'})
@@ -126,14 +160,7 @@ var specificOrganizeBODY = function(){
 
 	/*8. Other special requirement of CAScroll on DOM structure */
 
-	/* List items marked with - in mdSrc, parsered to li>div>ul 
-		Moved as children of previous li>div*/
-	ulItem = root.find('li>div>ul'); //console.log(ulItem.size());
-	ulItem.each(function(index, el) {
-		liPareTemp = $(this).parentsUntil('li').parent();
-		liPareTemp.prev().children().append($(this));
-		liPareTemp.remove();		
-	});
+	/* NO List items marked with - in mdSrc, parsered to li>div>ul */
 
 	/* No 'ol>li' or 'li>div without <p>' parsered from mdSrc in new syntax*/
 
@@ -175,11 +202,12 @@ var configWrap = function(target){
 	/* Only .relateDiv>target with location=right may change margin-left and width of .cotentDiv */
 	if (target != null && target.attr('location') == 'right') {
 		var rDivWnew = target.width()+rDivWidthWrap;
-		if (target.attr('id').match(/^IMG:/)){
+		if (target.attr('id').match(/^fn:img:/)){
 			rDivWnew = target.children().width()+rDivWidthWrap;
 		}
 		var left = initLeft - rDivWnew/2;
 
+		// ?? left must >=0 ??
 		if (left < 0  ){ // relateDiv.width > initleft*2
 			left = 0;
 			width = $('.container').offset().left +$('.container').outerWidth() - rDivWnew;
@@ -206,31 +234,29 @@ var initRDiv = function () {
 	/*	Init size of divs in .realteDiv differently, since right/bottom have differet valid space,
 		- passive v.s. active ; right v.s. bottom 
 		- NO need to init .relateDiv.position().left/top */
-	relateDiv.find("div >div.bottom").each(function(index, el) {
-		$(this).attr('location','bottom');
-	});
-	relateDiv.find("div >div:not(.bottom)").each(function(index, el) {
-		$(this).attr('location','right');
-	});
+
+	/* rDivWidth/HeightWrap is used by configWrap() & setRDivLeft/Top() */
+	rDivWidthWrap = relateDiv.outerWidth(true) - relateDiv.find('div:first').width();
+	rDivHeightWrap = relateDiv.outerHeight(true) - relateDiv.find('div:first').height();
 
 	/* Calculate Valide Space : Need updated HLBack, so require initHLB(firstHL) must before initRDiv() */
 	var cDivWidthMin = parseInt($('.contentWrap').css('min-width'), 10);
-	var rDivBoxWidth = relateDiv.outerWidth(true)-relateDiv.width() + parseInt($('.relateDiv >*').css('padding-left'))*2;
-	var rDivValidWidth = $('.container').outerWidth()- cDivWidthMin - rDivBoxWidth;
-	var rDivValidHeight = $('.container').height() - (HLBack.offset().top + HLBack.outerHeight(true)); 
+	var rDivRightValidWidth = $('.container').outerWidth()- cDivWidthMin - rDivWidthWrap;
+	var rDivRightValidHeight = $('.container').outerHeight()-headDiv.outerHeight(true) - rDivHeightWrap;
+	var rDivBottomValidHeight = rDivRightValidHeight - (HLBack.offset().top + HLBack.outerHeight(true)); 
 
 	/*Must set size for EVERY div.passive/active, and hide()
 	  - ALL .passive shown in right, but max-width is different
 	  - only set width for .right, while only set height for .bottom*/
-	relateDiv.find('.passive').css('max-height', $('.container').height());
+	relateDiv.find('.passive').css('max-height', rDivRightValidHeight);
 	relateDiv.find('div >div').each(function(index, el) {
 		if ($(this).hasClass('passive')){ //passive & all are location=right
-			$(this).css('width', Math.min($('.container').width()*0.4, rDivValidWidth, $(this).width())); // ?
+			$(this).css('width', Math.min($('.container').width()*0.4, rDivRightValidWidth, $(this).width())); // ?
 			$(this).css('height', $(this).height()); // ?
 
 		} else { //hasClass('active')
 			/* SET $(this).height/width for every image-active in relateDiv via img.onload() */
-			if ( $(this).attr('id').match(/^IMG:/)) {
+			if ( $(this).attr('id').match(/^fn:img:/)) {
 				$(this).children().load(function() { 					
 					var IMG = $(this); //img
 					var origWidth = IMG.get(0).naturalWidth; 
@@ -238,15 +264,15 @@ var initRDiv = function () {
 
 					var imgLoc = $(this).parent().attr('location');
 					if (imgLoc == 'right'){
-						if(origWidth>rDivValidWidth || origHeight > $('.container').height()) {
-							scale(IMG, rDivValidWidth, $('.container').height(), 1);
+						if(origWidth>rDivRightValidWidth || origHeight > rDivRightValidHeight) {
+							scale(IMG, rDivRightValidWidth, rDivRightValidHeight, 1);
 						} else {
 							IMG.css("width",origWidth);
 							IMG.css("height",origHeight);
 						}
 					} else if(imgLoc == 'bottom'){
-						if(origHeight>rDivValidHeight || origWidth > $('.container').width()) {
-							scale(IMG, $('.container').width(),rDivValidHeight, 1);
+						if(origHeight>rDivBottomValidHeight || origWidth > $('.container').width()) {
+							scale(IMG, $('.container').width(),rDivBottomValidHeight, 1);
 							/* May need to check height with $(.container).height()	*/
 						} else {
 							IMG.css("width",origWidth);
@@ -259,8 +285,17 @@ var initRDiv = function () {
 					console.log(IMG.parent().attr('id'),imgLoc, 'original is ',origWidth, origHeight,
 							 'parent used to be', IMG.parent().width(), IMG.parent().height(), 'reset to', IMG.width(), IMG.height() );
 				}); // end of onload() to reset height/width
+
+			} else if ($(this).attr('id').match(/^fn:tip:/)){
+				$(this).css('max-height', rDivRightValidHeight);
+				$(this).css('width', Math.min($('.container').width()*0.4, rDivRightValidWidth, $(this).width()));
+				$(this).css('height', $(this).height());
+
+			// } else if ($(this).attr('id').match(/^fn:one:/)){
+			// 	$(this).css('width', $('.L_1').width());//$(this).attr('level')
+			// 	$(this).css('height', $(this).height()); // ?
 			} else{ 
-				console.log("GOT Active but NOT IMG!");
+				console.log("GOT Active but NO matched type!");
 			}
 		}
 
@@ -268,9 +303,6 @@ var initRDiv = function () {
 		$(this).hide();
 	});
 
-	/* rDivWidth/HeightWrap is used by configWrap() & setRDivLeft/Top() */
-	rDivWidthWrap = relateDiv.outerWidth(true) - relateDiv.width()+parseInt(relateDiv.css('margin-left'))*2;
-	rDivHeightWrap = relateDiv.outerHeight(true) - relateDiv.height();
 	relateDiv.hide();
 }
 
@@ -284,7 +316,7 @@ var hasRDiv = function(item, mode){
 		else, NOT Null, target will be updated as .relateDiv>div>div
 		?? What if has more than one target, i.e., relateLI.size() >1 ??*/
 	relateLI.each(function() {
-		target = $($(this).attr('href').replace(':', '\\:'));
+		target = $($(this).attr('href').replace(/:/g, '\\:'));
 	});
 
 	return target;
@@ -295,32 +327,39 @@ var setRDivLeft = function(target, cDiv){
 	var newLeft = 0;
 	if (target.attr('location') == 'bottom'){//target.attr('location') == 'bottom'
 		var rDivWnew = target.width()+rDivWidthWrap;
-		if (target.attr('id').match(/^IMG:/)){
+		if (target.attr('id').match(/^fn:img:/)){
 			rDivWnew = target.children().width()+rDivWidthWrap;
 		}
-		newLeft = ($('.container').outerWidth()-rDivWnew)/2 ;
+		newLeft = $('.container').offset().left + ($('.container').outerWidth()-rDivWnew)/2;
+		// console.log($('.contentWrap').position().left+$('.contentWrap').outerWidth(true)/2);
 	} else {// location == right
-		newLeft = $('.container').offset().left +cDiv.left + cDiv.width -2;
+		/*setRdivLeft is called after finish update Div.size */
+		newLeft = HLBack.offset().left +HLBack.outerWidth(true);
 	}
 
-	newLeft = newLeft< - parseInt(relateDiv.css('margin-left'))*2 ? - parseInt(relateDiv.css('margin-left'))*2 : newLeft;
+	/*  Must be newleft, not minL, because :
+		$('.container').offset().left <= [$('.container').outerWidth() - target.children().width()]/2 */
+	var minL = -rDivWidthWrap/2;
+	newLeft = newLeft< minL ? minL : newLeft;
 	relateDiv.css('left', newLeft);// relateDiv.animate({left:newLeft},'slow');
 }
 var setRDivTop = function(target, HLHeight){
 	if (target == null) return;/* target must NOT null, since has been checked outside before this called*/
 	var newTop = 0;
 	if (target.attr('location') == 'bottom'){
-		newTop = HLBack.offset().top + HLHeight;
+		newTop = HLBack.offset().top + HLHeight - 5;//parseInt(relateDiv.css('margin-top'), 10)
 	} else {// location == right
-		var rDivWnew = (target.height()+rDivHeightWrap);
-		if (target.attr('id').match(/^IMG:/)){
-			rDivWnew = (target.children().height()+rDivHeightWrap);
+		var rDivHnew = (target.height()+rDivHeightWrap);
+		if (target.attr('id').match(/^fn:img:/)){
+			rDivHnew = (target.children().height()+rDivHeightWrap);
 		}
-		newTop = HLBack.offset().top + HLHeight/2 - rDivWnew/2;
+		newTop = HLBack.offset().top + HLHeight/2 - rDivHnew/2;
+		// console.log(HLBack.offset().top + HLHeight/2,newTop +rDivHnew/2);
 	}
 
-	newTop = newTop< - parseInt(relateDiv.css('margin-top')) ? - parseInt(relateDiv.css('margin-top')) : newTop;
-	relateDiv.css('top', newTop);//relateDiv.animate({top:newTop},'slow');
+	var minT = root.offset().top;// - parseInt(relateDiv.css('margin-top'))
+	newTop = newTop< minT ? minT : newTop;
+	relateDiv.animate({top:newTop},'slow');// relateDiv.css('top', newTop);
 }
 
 var hideRDiv = function(){ // relateDiv.hide('slow');
@@ -331,7 +370,7 @@ var hideRDiv = function(){ // relateDiv.hide('slow');
 		relateDiv.effect('slide', { direction: 'right', mode: 'hide' }, 'slow');
 	}
 }
-var showRDiv = function(target){ // relateDiv.show('slow');
+var showRDiv = function(target, HLHeight){ // relateDiv.show('slow');
 	if (target == null) return;/* target must NOT null, since has been checked outside before this called*/
 	if ($('.hlSupport').attr('id') != target.attr('id') ){
 		$('.hlSupport').hide()
@@ -342,7 +381,7 @@ var showRDiv = function(target){ // relateDiv.show('slow');
 
 	if (target.attr('location') == 'bottom'){
 		relateDiv.effect('slide', { direction: 'up', mode: 'show' }, 'slow');
-		$('.highlight').height($('.highlight').height() + relateDiv.outerHeight()); // Add height for active bottom
+		$('.highlight').height(HLHeight + relateDiv.outerHeight() + parseInt(relateDiv.css('margin-top'), 10)) - 5; // Add height for active bottom
 	} else {
 		relateDiv.effect('slide', { direction: 'left', mode: 'show' }, 'slow');
 	}
@@ -406,7 +445,9 @@ var triggerAnimate = function(unit,mode){
 				And must set target to null, for correct configWrap() and other update*/
 			if (passiveTarget.css('display')!='none' && relateDiv.css('display')!='none') {
 				hideRDiv();
-				passiveTarget = null;
+				/* Support item have both passive & active : only show one of both*/
+				passiveTarget = hasRDiv(current,'active');
+
 			};
 
 			var updatedCDiv = configWrap(passiveTarget);
@@ -417,7 +458,7 @@ var triggerAnimate = function(unit,mode){
 				if (passiveTarget){
 					setRDivLeft(passiveTarget, updatedCDiv);
 					setRDivTop(passiveTarget, fullH);
-					showRDiv(passiveTarget);				
+					showRDiv(passiveTarget, fullH);				
 				}
 				updateHLB(current, fullH);
 			});	
@@ -436,7 +477,8 @@ var triggerAnimate = function(unit,mode){
 	var expandTop = expand.position().top;
 
 	var activeTarget = hasRDiv(expand,'active');
-	hideRDiv();/* Must hideRDiv() when .highlight is changed to avoid confused animation*/
+	/* If activeTarget is changed, Must hideRDiv() when .highlight is changed to avoid confused animation*/
+	if (!activeTarget || activeTarget.css('display') =='none') { hideRDiv(); }
 
 	var scroll = function(){
 		//5 change .HL /* Reset .highlight target : change from shrink to expand */
@@ -451,7 +493,7 @@ var triggerAnimate = function(unit,mode){
 		if (activeTarget) {
 			setRDivLeft(activeTarget,updatedCDiv);
 			setRDivTop(activeTarget, fullH);
-			showRDiv(activeTarget);
+			showRDiv(activeTarget, fullH );
 		};
 
 		//9	/*2. Show & Hide on the related items : based on the unit */
@@ -616,7 +658,7 @@ var main = function(){
 
 	/* Action-click : show item/image in a popup layer if clicking it in .relateDiv */
 	relateDiv.find('div>div.active').click(function(event) {
-		if ($(this).attr('id').match(/^IMG:/)) {
+		if ($(this).attr('id').match(/^fn:img:/)) {
 			var url = $(this).find('img').attr('src');
 			$('#above >div').first().replaceWith($('<div/>').append($('<img/>',{src: url})));
 

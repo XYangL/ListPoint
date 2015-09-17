@@ -1,4 +1,30 @@
 ======
+8.7 : Update based on new Syntax for footnotes shown in relateDiv
+======
+CAScroll.css: add styles for following elements:
+- multi blocks in .relateDiv
+- multi lines in one block
+- list item after lines in one block
+- list item shown as one block
+
+CAScroll.js: 
+- specificOrganizeBODY() : update highlight position
+- init(): reset height of root since add headDib in the top of root
+
+- fillRelateDiv(): change to process based on FN type spcified in its ID
+- update the process of .footnote-ref in .contenteDiv 
+	* move it from inside to after fillrelateDiv()
+	* based on FN type, add mark and set location to realted items
+
+- change regex used for detecting image and other FN type, since it has more than one ':'
+- initRDiv(): update var names and add init on size of fn:tip
+- improve setRDivLeft() and setRDivTop() to be more precious
+- showRDiv(target, HLHeight) : using HLHeight retrun from setHeight() to update the height of .highlight
+- triggerAnimate()
+	* Support to show .relateDiv fot items with both passive & active
+	* if relate target is not changed, then no need to hideRDiv()
+
+======
 8.6 : Use style to Differ items: different level in headDiv ; Has discussed v.s. not discussed
 ======
 CAScroll.css: 

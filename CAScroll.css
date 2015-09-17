@@ -173,6 +173,9 @@ body {
 	width: 100%;
 }
 
+.relateDiv >div >div.passive >*:not(:first-child){
+	margin-top: 10px;
+}
 /*Similar to 7.3*/
 .relateDiv{
 	margin :10px;
@@ -315,4 +318,39 @@ body {
 .headDiv li#L4 div{
 	font-size: 75%;
 	font-weight: 300;
+}
+
+/*Styel for space between multi line in one block*/
+.contentDiv li>div>p>br{
+	display: block;
+    margin-top: 10px;
+    content: "";
+}
+
+/*Style for [^one:1] : List item after lines in one block*/
+.contentDiv li>div>p+ul {
+	list-style: outside;
+	padding-left: 50px;
+}
+
+.contentDiv li>div>p+ul >li {
+	padding-right: 50px;
+	font-size: 85%;
+}
+
+.contentDiv li>div>p+ul >li:first-child {
+	list-style:initial;
+}
+
+/*Style for list item shown as one block*/
+.contentDiv li>div>ul {
+	padding-left: 0px;
+}
+
+.contentDiv li>div>ul >li:not(:first-child) {
+	padding-top: 10px;
+}
+
+.contentDiv li>div>ul >li:first-child {
+	list-style:none;
 }
