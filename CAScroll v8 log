@@ -1,4 +1,22 @@
 ======
+8.8 : Update for new image syntax and improve height on MathJax
+======
+CAScroll.css
+- Correct inident for multi lines in one block
+
+CAScroll.js
+- Update selecter to exclude ol as related detials
+
+- Update location setting for new image syntax
+  [^img:ran]: images/ml_ran.png {.bottom}
+
+- !! add initMahtJax() to pre-set heidht for MathJax Element; 
+  !! CAScroll.json also update to set MathJax to call initMathJax after rendering
+
+- !! Add support to disable scroll until last one is finished for keypress or click
+
+
+======
 8.7 : Update based on new Syntax for footnotes shown in relateDiv
 ======
 CAScroll.css: add styles for following elements:
@@ -23,6 +41,7 @@ CAScroll.js:
 - triggerAnimate()
 	* Support to show .relateDiv fot items with both passive & active
 	* if relate target is not changed, then no need to hideRDiv()
+
 
 ======
 8.6 : Use style to Differ items: different level in headDiv ; Has discussed v.s. not discussed

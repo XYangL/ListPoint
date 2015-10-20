@@ -354,3 +354,8 @@ body {
 .contentDiv li>div>ul >li:first-child {
 	list-style:none;
 }
+
+.contentDiv  li>div> p{
+	text-indent: -1em;
+    padding-left: 1em;
+}

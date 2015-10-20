@@ -65,8 +65,8 @@ var specificOrganizeBODY = function(){
 	root.wrap("<div class='contentWrap' />");
 
 	/*Height of preDiv decide the position.top of .highlight*/
-	root.prepend('<p id="preDiv" style="height: 25vh;"> </p>');
-	root.append('<p id="postDiv" style="height: 75vh;"> </p>');
+	root.prepend('<p id="preDiv" style="height: 30vh;"> </p>');
+	root.append('<p id="postDiv" style="height: 70vh;"> </p>');
 
 	/*3. Static Highilght Background : Add div.hlBackground to highlight in Blue */
 	HLBack = $("<div/>", {class: "hlBackground"});
@@ -81,7 +81,7 @@ var specificOrganizeBODY = function(){
 	var fillRelateDiv = function( RDiv ){
 		var FN = $('div.footnotes');//console.log(FN.size());
 		FN.remove();
-		FN.find('ol>li').each(function(){
+		FN.find('>ol>li').each(function(){
 			/* Remove the back link tag */
 			// $(this).find('.footnote-backref').parent().remove();
 			$(this).find('.footnote-backref').remove();
@@ -123,11 +123,11 @@ var specificOrganizeBODY = function(){
 			case 'img':
 				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-active'});
 				tempLink.html('<span class="ui-icon ui-icon-image"></span>');
-				$(this).parents('li>div').hasClass('bottom')? relateFN.attr('location','bottom'):relateFN.attr('location','right');
 				if ($(this).parents('li>div').hasClass('des')) {
 					var tempDes = $(this).parents('li>div');
 					tempDes.parent().find('li >div:nth-child(1)>p, li >div:nth-child(1)>ul>li:last-child').append($('<sub/>').append(tempLink.clone()));
 				};
+				relateFN.find('img').hasClass('bottom')? relateFN.attr('location','bottom'):relateFN.attr('location','right');
 				break;
 			case 'tip':
 				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-active'});
@@ -230,6 +230,25 @@ var scale = function(IMG, maxW, maxH, factor){
 	}
 }
 
+var initMathJax = function(){
+	$('.MathJax_Display').css('margin','0');
+	relateDiv.show();
+	relateDiv.children().children().each(
+		function(){
+			if($(this).has('.MathJax_preview').length>0){
+				$(this).show(); //console.log($(this).attr('id'),$(this).height());
+				temp = 0;
+				$(this).children().each(function(){
+					temp += $(this).outerHeight();
+				});
+				$(this).height(temp);
+				$(this).hide();
+			}
+		}
+	);
+	relateDiv.hide();
+}
+
 var initRDiv = function () {
 	/*	Init size of divs in .realteDiv differently, since right/bottom have differet valid space,
 		- passive v.s. active ; right v.s. bottom 
@@ -250,13 +269,14 @@ var initRDiv = function () {
 	  - only set width for .right, while only set height for .bottom*/
 	relateDiv.find('.passive').css('max-height', rDivRightValidHeight);
 	relateDiv.find('div >div').each(function(index, el) {
-		if ($(this).hasClass('passive')){ //passive & all are location=right
+		if ($(this).hasClass('passive')){ //passive & all are location=right // $(this).attr('id').match(/^fn:hide:/)
 			$(this).css('width', Math.min($('.container').width()*0.4, rDivRightValidWidth, $(this).width())); // ?
 			$(this).css('height', $(this).height()); // ?
 
 		} else { //hasClass('active')
 			/* SET $(this).height/width for every image-active in relateDiv via img.onload() */
 			if ( $(this).attr('id').match(/^fn:img:/)) {
+				
 				$(this).children().load(function() { 					
 					var IMG = $(this); //img
 					var origWidth = IMG.get(0).naturalWidth; 
@@ -281,9 +301,6 @@ var initRDiv = function () {
 					} else {
 						console.log('Other Location');
 					}
-
-					console.log(IMG.parent().attr('id'),imgLoc, 'original is ',origWidth, origHeight,
-							 'parent used to be', IMG.parent().width(), IMG.parent().height(), 'reset to', IMG.width(), IMG.height() );
 				}); // end of onload() to reset height/width
 
 			} else if ($(this).attr('id').match(/^fn:tip:/)){
@@ -590,6 +607,9 @@ var main = function(){
 		Array key - change .highlight 
 		Space key - show or hide .passive */
 	$(document).keydown(function(key) {	
+		/* Disable scroll until last is finished*/
+		if (root.is(':animated')|| $('.contentWrap').is(':animated')) {	return;	};
+
 		var unit = 0, mode = 'key';	
 		switch(parseInt(key.which,10)) {
 			case 37:// Left : -1 | <-1
@@ -648,6 +668,9 @@ var main = function(){
 
 	/* Action-click : change .highlight if clicking item in .contentDiv */
 	$(".contentDiv li>div:first-child").click(function(event) {
+		/* Disable scroll until last is finished*/
+		if (root.is(':animated')|| $('.contentWrap').is(':animated')) {	return;	};
+
 		/* Act on the event */
 		var expandID = parseInt($(this).attr('id').replace("item", ""));
 		unit = expandID-index;// console.log(expandID, unit);
@@ -658,6 +681,9 @@ var main = function(){
 
 	/* Action-click : show item/image in a popup layer if clicking it in .relateDiv */
 	relateDiv.find('div>div.active').click(function(event) {
+		/* Disable scroll until last is finished*/
+		if (root.is(':animated')|| $('.contentWrap').is(':animated')) {	return;	};
+
 		if ($(this).attr('id').match(/^fn:img:/)) {
 			var url = $(this).find('img').attr('src');
 			$('#above >div').first().replaceWith($('<div/>').append($('<img/>',{src: url})));
