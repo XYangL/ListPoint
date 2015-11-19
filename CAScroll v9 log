@@ -1,4 +1,16 @@
 ======
+9.1: Better Look Design for Seminar Demo 1113
+======
+1. headDiv with pure Css
+2. Background with image 
+3. footDiv with logo and other meta info
+
+* Almost as used in demo
+* But, little reorganise after seminar for easy update later
+
+
+
+======
 9.0: Better structure and more configure support 
 ======
 - revised from CAScroll v8.8 for easy convert to ScrollSlide

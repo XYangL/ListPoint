@@ -16,7 +16,17 @@ var headDiv = null;
 
 var sectionBased = false;
 
+var imageUrl = 'images/circlebg.png';
+var logoUrl = 'images/hkulogo.png';
+var fnContent = '<p>Scroll List</p>';
+
 var init = function(){
+	/*configure screen/viewpoint Style*/
+	$('html').append($('<div/>',{'id': 'footDiv'}));
+	$('#footDiv').append($('<img/>',{'id': 'logo', 'src':logoUrl}));
+	$('#footDiv').append($(fnContent));
+
+
 	/*Insert Presentation Title*/
 	$('ul.L_1>li:first-child').remove();// may not need after update the parser:listABLE()
 	var title = $('<div/>',{'id': 'title'}); title.append($('<p/>').html($('title').html()));
@@ -41,9 +51,11 @@ var init = function(){
 	relateDiv.insertAfter(root.parent());
 	
 	/*A-7 headDiv to show elements in deep path from root/title to .highlight*/
-	headDiv = $('<div/>',{'class': 'headDiv'});
-	headDiv.append($('<ul><li target="#title"><div><span class="ui-icon ui-icon-home"></span> HOME</div></li>'+
-		' <li id="L2"></li>'+' <li id="L3"></li>'+ ' <li id="L4"></li></ul>'));
+	headDiv = $('<div/>',{'class': 'breadcrumb flat'});
+	headDiv.append($('<a href="#" target="#title"><div><span class="ui-icon ui-icon-home"></span> HOME </div></a>'))
+	headDiv.append($('<a href="#" id="L2"></a>'));
+	headDiv.append($('<a href="#" id="L3"></a>'));
+	headDiv.append($('<a href="#" id="L4"></a>'));
 	headDiv.insertBefore(root.parent());
 
 	root.parent().add(relateDiv).add(headDiv).wrapAll("<div class='container' />");
@@ -74,16 +86,15 @@ var init = function(){
 
 	sectionBased = !sectionBased ? 0 : parseInt($('#item0').attr('oneLineH')) + parseInt($('#item0').css('margin-bottom'));
 
-	initCDivWrap(root, root.height() - headDiv.outerHeight(true));
+	initCDivWrap(root, $('#footDiv').position().top - parseInt($('body').css('margin-top')) - headDiv.outerHeight(true));
 
 	/*B-6. User Defined Relationship : init .relateDiv position */
 	initRDiv();
 
 	/*B-7. initHDiv() : hide items in headDiv except the 1st home/title one*/
-	headDiv.find('li:not(:first)').hide();
+	headDiv.find('a:not(:first)').hide();
 
-	
-	/*C: init 1st HL target, start from showToc */
+	/*C. init 1st HL target, start from showToc */
 	HLBack.insertAfter(root);
 	HLBack.css("top",root.find('.preDiv').height());// initHLB()
 
@@ -91,6 +102,10 @@ var init = function(){
 	var firstHL = $('#title');
 	firstHL.addClass('highlight');
 	updateHLB(firstHL, setHeight(firstHL,"full"));
+
+
+	/*E. More Global Style Setting*/	
+	$('html').css('background-image', 'url(' + imageUrl + ')');
 };
 
 
@@ -443,14 +458,17 @@ var updateHeadDiv = function(){
 	var headItem = $('.highlight').parents('ul').prev();
 	headItem = $(headItem.get().slice(0,-1).reverse());
 
-	var maxWidth = $('.headDiv >ul').width() - $('.headDiv >ul >li:first').width();// Limit the length
+	var availWidth = headDiv.width() - headDiv.children().eq(0).outerWidth();// Limit the length
 	for (var i = 2; i <5; i++) {
-		var temp = headDiv.find('li:nth-child('+i+')');
+		var temp = headDiv.find('a:nth-child('+i+')');
 		if (headItem.eq(i-2).html() != null) {
 			temp.attr('target', '#'+headItem.eq(i-2).attr('id'));
-			temp.html('<div>'+headItem.eq(i-2).text()+'</div>');
-			temp.children().css('max-width',  maxWidth*0.5); // Limit the length
-			maxWidth = maxWidth - temp.width();
+			var arrow = '';//<span class="arrow"></span>';
+			temp.html('<div>'+headItem.eq(i-2).text() + arrow +'</div>');
+			i == 4 ? temp.children().css('max-width',  availWidth- parseInt(temp.children().css('padding-left'),10)):
+					 temp.children().css('max-width',  availWidth*0.5); // Limit the length
+			availWidth = availWidth - temp.outerWidth()-20;
+
 			temp.effect('slide', { direction: 'left', mode: 'show' }, 'slow');
 		} else {
 			temp.effect('slide', { direction: 'left', mode: 'hide' }, 'slow');
@@ -485,9 +503,9 @@ var triggerAnimate = function(unit,mode){
 		expand.addClass('highlight');
 
 		//6 setHeight()	/*1. Expand & Shrink : via resetting height */
-		var oneLineH = 0, time = 0;
-		if (shrink.hasClass('slowShrink') && shrink.closest('ul').prev().attr('id')==expand.closest('ul').prev().attr('id')) {
-			// console.log('has to keeped full');
+		var oneLineH = 0;
+		var time = 0;
+		if (shrink.hasClass('slowShrink') && shrink.closest('ul').prev().attr('id')==expand.closest('ul').prev().attr('id')) {			
 			oneLineH = shrinkOldHeight;
 			shrink.addClass('full');
 		} else{
@@ -600,6 +618,7 @@ var triggerAnimate = function(unit,mode){
 	/*---v4-8--Scrollable Highlight-------*/
 	// $('.highlight').css('background', '');
 	// $('.hlBackground').css('background', '#5bc0de');
+
 	index += unit;
 };
 
@@ -654,12 +673,12 @@ $(document).ready(main);
 /* Action-click */
 var setClickHandler = function(){
 	/* Action-click : change .highlight if clicking item in .contentDiv */
-	$('.L_1').find("li>div:first-child").click(function(event) {
+	root.find("li>div:first-child").click(function(event) {
 		/* Disable scroll until last is finished*/
-	if (root && (root.is(':animated')|| root.parent().is(':animated')|| relateDiv.is(':animated')) ) {
+		if (root && (root.is(':animated')|| root.parent().is(':animated')|| relateDiv.is(':animated')) ) {
 			console.warn('Animation has NOT finished!', root.is(':animated'), root.parent().is(':animated'), relateDiv.is(':animated'));
 			return
-	};
+		};
 
 		/* Act on the event */
 		var expandID = parseInt($(this).attr('id').replace("item", ""));
@@ -671,10 +690,10 @@ var setClickHandler = function(){
 	/* Action-click : show item/image in a popup layer if clicking it in .relateDiv */
 	relateDiv.find('div>div.active').click(function(event) {
 		/* Disable scroll until last is finished*/
-	if (root && (root.is(':animated')|| root.parent().is(':animated')|| relateDiv.is(':animated')) ) {
+		if (root && (root.is(':animated')|| root.parent().is(':animated')|| relateDiv.is(':animated')) ) {
 			console.warn('Animation has NOT finished!', root.is(':animated'), root.parent().is(':animated'), relateDiv.is(':animated'));
 			return
-	};
+		};
 
 		if ($(this).attr('id').match(/^fn:img:/)) {
 			var url = $(this).find('img').attr('src');
@@ -691,8 +710,9 @@ var setClickHandler = function(){
 	});
 
 	/* Action-click : change .highlight if clicking item in .headDiv */
-	headDiv.find('ul>li').click(function(event) {
-		$($(this).attr('target')).click();
+	headDiv.find('>a').click(function(event) {
+		 event.preventDefault();
+		 $($(this).attr('target')).click();
 	});
 
 	/* Action-click : switch to mode='showToc' if click #title */
