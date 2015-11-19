@@ -14,106 +14,166 @@ var rDivHeightWrap =0;
 
 var headDiv = null;
 
-var init = function (){
-	root = $('div.contentDiv');
-	
-	specificOrganizeBODY();
+var sectionBased = false;
 
-	/*Reset height of root, since the inserted headDiv occupy the top part of window*/
-	root.height(root.height() - headDiv.outerHeight(true));
+var init = function(){
+	/*Insert Presentation Title*/
+	$('ul.L_1>li:first-child').remove();// may not need after update the parser:listABLE()
+	var title = $('<div/>',{'id': 'title'}); title.append($('<p/>').html($('title').html()));
+	$('.contentDiv').prepend(title);
 
-	divs = root.find("li>div:first-child");
-	num = divs.size();
-
-	/*0. Scrollable: to support scroll action : Add id to every item for easy Navigation */
-	for (  i = 0; i<num; i++){
-		divs.eq(i).attr('id','item'.concat(i));
-	}
-
-	/*1. Expand & Shrink : add div for recording oneLineH height & init every item*/
-	divs.each(function() {
-		$(this).after('<div style="height:0;width:0;margin-bottom: 0px;"><p>oneline</p> </div>');
-		setHeight($(this),'one-line');
+	/* Special configure via class*/
+	$('.detailed').each(function(index, el) {
+		$(this).next('ul').find('>li>div').each(function(index, el) {
+			$(this).addClass('slowShrink');
+		});
 	});
+	if($('body').hasClass('sectionBased')) sectionBased = true;
+
+	/*A: Reorganize the structure of DOM :  specificOrganizeBODY */
+	root = $('div.contentDiv');
+	wrapCDiv(root);
+
+	/*A-6. User Defined Relationship : Init relateDiv, fill it, & inset into DOM */
+	relateDiv = $("<div/>", {class: "relateDiv"});
+	relateDiv.append( $('<div/>'));
+	reOrganizeRDiv(relateDiv);
+	relateDiv.insertAfter(root.parent());
 	
-	/*2. Show & Hide : init every item */
-	root.find('li>ol,li>ul').hide();
+	/*A-7 headDiv to show elements in deep path from root/title to .highlight*/
+	headDiv = $('<div/>',{'class': 'headDiv'});
+	headDiv.append($('<ul><li target="#title"><div><span class="ui-icon ui-icon-home"></span> HOME</div></li>'+
+		' <li id="L2"></li>'+' <li id="L3"></li>'+ ' <li id="L4"></li></ul>'));
+	headDiv.insertBefore(root.parent());
 
-	/* init 1st HL target */
-	var firstHL = divs.eq(index);
-	firstHL.addClass('highlight');
+	root.parent().add(relateDiv).add(headDiv).wrapAll("<div class='container' />");
 
-	initWrap();
-
-	/*3. Static Highilght Background :  init .hlBackground position, width, height*/
-	initHLB(firstHL, setHeight(firstHL,"full")); // setHeight(firstHL,"full");
-
-	/*6. User Defined Relationship : init .relateDiv position */
-	initRDiv();
-
-	/*7. initHDiv() : hide items in headDiv except the 1st home/title one*/
-	headDiv.find('li:not(:first)').hide();
-};
-
-var specificOrganizeBODY = function(){
-	$('body >*').wrapAll("<div class='container' />");
-
+	/*A-8. Other special requirement of CAScroll on DOM structure */
 	/* div#above to show image in a popup layer */
 	$('body').append($('<div/>',{id: 'above', 'style':'display:none;'}));
 	$('#above').append($('<div/>'));
+	
+	/*A-3. Static Highilght Background : Add div.hlBackground to highlight in Blue */
+	HLBack = $("<div/>", {class: "hlBackground"});
 
-	root.wrap("<div class='contentWrap' />");
+
+	/*B: init setting or rederring on finalised DOM framework*/
+	divs = root.find("li>div:first-child");
+	num = divs.size();
+	divs.each(function(index, el) {
+		$(this).attr('id','item'.concat(index));
+	});
+	/*B-1. Expand & Shrink : add div for getting oneLineH height, init every item*/
+	divs.add($('#title')).each(function(index, el) {
+		$(this).after('<div style="height:0;width:0;margin-bottom: 0px;"><p>oneline</p> </div>');
+		$(this).attr('onelineH',$(this).next().children().outerHeight());
+		$(this).next().remove();
+		
+		setHeight($(this),'one-line');
+	});
+
+	sectionBased = !sectionBased ? 0 : parseInt($('#item0').attr('oneLineH')) + parseInt($('#item0').css('margin-bottom'));
+
+	initCDivWrap(root, root.height() - headDiv.outerHeight(true));
+
+	/*B-6. User Defined Relationship : init .relateDiv position */
+	initRDiv();
+
+	/*B-7. initHDiv() : hide items in headDiv except the 1st home/title one*/
+	headDiv.find('li:not(:first)').hide();
+
+	
+	/*C: init 1st HL target, start from showToc */
+	HLBack.insertAfter(root);
+	HLBack.css("top",root.find('.preDiv').height());// initHLB()
+
+	index = -1;
+	var firstHL = $('#title');
+	firstHL.addClass('highlight');
+	updateHLB(firstHL, setHeight(firstHL,"full"));
+};
+
+
+var wrapCDiv = function( CDiv ){
+	CDiv.wrap("<div class='contentWrap' />");
+	CDiv.prepend('<p class="preDiv"> </p>');
+	CDiv.append('<p class="postDiv"> </p>');
+}
+
+
+var initCDivWrap = function( cDiv, cHeight ) {
+	/*Reset height of root, since the inserted headDiv occupy the top part of window*/
+	cDiv.height(cHeight);
 
 	/*Height of preDiv decide the position.top of .highlight*/
-	root.prepend('<p id="preDiv" style="height: 30vh;"> </p>');
-	root.append('<p id="postDiv" style="height: 70vh;"> </p>');
+	targetTop = 0.3;/*init as percentage, later set to cDiv.scrollTop()*/
+	cDiv.find('.preDiv').height(cDiv.height() * targetTop);
+	cDiv.find('.postDiv').height(cDiv.height() * (1-targetTop));
 
-	/*3. Static Highilght Background : Add div.hlBackground to highlight in Blue */
-	HLBack = $("<div/>", {class: "hlBackground"});
-	HLBack.insertAfter(root);
+	/*2. Show & Hide : init every item */
+	cDiv.find('li>ol,li>ul').hide();
 
-	/*6. User Defined Relationship : Init relateDiv, fill it, & inset into DOM */
-	relateDiv = $("<div/>", {class: "relateDiv"});
-	relateDiv.append( $('<div/>'));
+	/* The whole .contentWrap=cDiv.parent() should be in the center of the screen*/
+	initLeft = ($('body').outerWidth()-cDiv.parent().outerWidth())/2;
+	cDiv.parent().css('left', initLeft );
+	initWidth = cDiv.parent().width();
+}
 
-	var IDREG = /fn:([a-zA-z]*):([0-9]*)/;
-	/*6-1: Replace Footnote into contents in RDiv */
-	var fillRelateDiv = function( RDiv ){
-		var FN = $('div.footnotes');//console.log(FN.size());
-		FN.remove();
-		FN.find('>ol>li').each(function(){
-			/* Remove the back link tag */
-			// $(this).find('.footnote-backref').parent().remove();
-			$(this).find('.footnote-backref').remove();
-			lastP = $(this).children('p:last');
-			if (!lastP.html().trim()){ lastP.remove(); }
+var configWrap = function(target){
+	var left = initLeft;
+	var width = initWidth;
 
-			/*Based on FN type, set active/passive and update content.html()*/
-			var FNType = IDREG.exec($(this).attr('id'))[1];
-			switch(FNType){
-				case 'hide':
-					var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'passive'}).append($(this).html());
-					break;
-				case 'img':
-					var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'active'}).append($(this).find('img').clone());
-					break;
-				default: // 'tip' & 'one'
-					var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'active'}).append($(this).html());
-					break;
-			}
-			RDiv.children(':first').append(temp);		
-		});
+	/* Only .relateDiv>target with location=right may change margin-left and width of .cotentDiv */
+	if (target != null && target.attr('location') == 'right') {
+		var rDivWnew = target.width()+rDivWidthWrap;
+		if (target.attr('id').match(/^fn:img:/)){
+			rDivWnew = target.children().width()+rDivWidthWrap;
+		}
+		var left = initLeft - rDivWnew/2;
+
+		// ?? left must >=0 ??
+		if (left < 0  ){ // relateDiv.width > initleft*2
+			left = 0;
+			width = $('.container').offset().left +$('.container').outerWidth() - rDivWnew;
+		}
 	}
-	fillRelateDiv(relateDiv);
+	return {left:left, width:width};
+}
 
-	relateDiv.insertAfter(root.parent());
+var reOrganizeRDiv = function( RDiv ){
+	var IDREG = /fn:([a-zA-z]*):([0-9]*)/;
 
-	/*6-2: add mark and set location to items has relatedItems
-		!! must afet relateDiv is inserted to root*/
-	// root.find('li>div').has('.footnote-ref')
-	$('.footnote-ref').each(function(index, el) {
+	/*6-1: Replace Footnote into contents in RDiv */
+	var FN = $('div.footnotes');
+	FN.remove();
+
+	FN.find('>ol>li').each(function(){
+		/* Remove the back link tag */
+		// $(this).find('.footnote-backref').parent().remove();
+		$(this).find('.footnote-backref').remove();
+		lastP = $(this).children('p:last');
+		if (!lastP.html().trim()){ lastP.remove(); }
+
+		/*Based on FN type, set active/passive and update content.html()*/
+		var FNType = IDREG.exec($(this).attr('id'))[1];
+		switch(FNType){
+			case 'hide':
+				var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'passive'}).append($(this).html());
+				break;
+			case 'img':
+				var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'active'}).append($(this).find('img').clone());
+				break;
+			default: // 'tip' & 'one'
+				var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'active'}).append($(this).html());
+				break;
+		}
+		RDiv.children(':first').append(temp);		
+	});
+
+	/*6-2: add mark and set location to items has relatedItems*/
+	root.find('.footnote-ref').each(function(index, el) {
 		var FNType = IDREG.exec($(this).attr('href'))[1];
-		var relateFN = $($(this).attr('href').replace(/:/g, '\\:'));
+		var relateFN = RDiv.find($(this).attr('href').replace(/:/g, '\\:'));
 		switch(FNType){
 			case 'hide':
 				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-passive'});
@@ -150,70 +210,6 @@ var specificOrganizeBODY = function(){
 			$(this).parent().replaceWith(tempLink);			
 		};
 	});
-
-	/*7 headDiv to show elements in deep path from root/title to .highlight*/
-	headDiv = $('<div/>',{'class': 'headDiv'})
-	headDiv.insertBefore(root.parent());
-	/*Differ items in headDiv based on its level */
-	headDiv.append($('<ul><li target="#item0"><div><span class="ui-icon ui-icon-home"></span> HOME</div></li>'+
-		' <li id="L2"></li>'+' <li id="L3"></li>'+ ' <li id="L4"></li></ul>'));
-
-	/*8. Other special requirement of CAScroll on DOM structure */
-
-	/* NO List items marked with - in mdSrc, parsered to li>div>ul */
-
-	/* No 'ol>li' or 'li>div without <p>' parsered from mdSrc in new syntax*/
-
-	/* Find and set ID for title, having special style setting via css */
-	$('.L_1 >li:first').attr('id','title');
-
-}
-
-var initHLB = function(base, temp){ 
-	/*  Depend on base - $('.highlight')
-		Only set Top when init, and then keep it without change*/
-	HLBack.css("top",base.position().top);// HLBack.css(base.position());
-	updateHLB(base, temp);
-}
-
-var updateHLB = function(base, temp){
-	/*	Depend on base - $('.highlight')
-		HLB.height has transition, which need to be varied to final value,
-		so get its height from temp,  instead of using .outHeight() directly*/
-	// HLBack.css("left",base.position().left); // HLBack.css(base.position());
-
-	// HLBack.height(base.outerHeight());
-	var borderTemp = base.outerHeight()-base.height();
-	HLBack.height(temp+borderTemp);
-	// HLBack.width(base.outerWidth());
-}
-
-var initWrap = function(){
-	/* The whole .contentWrap should be in the center of the screen*/
-	initLeft = ($('body').outerWidth()-$('.contentWrap').outerWidth())/2;
-	$('.contentWrap').css('left', initLeft );
-	initWidth = $('.contentWrap').width();
-}
-
-var configWrap = function(target){
-	var left = initLeft;
-	var width = initWidth;
-
-	/* Only .relateDiv>target with location=right may change margin-left and width of .cotentDiv */
-	if (target != null && target.attr('location') == 'right') {
-		var rDivWnew = target.width()+rDivWidthWrap;
-		if (target.attr('id').match(/^fn:img:/)){
-			rDivWnew = target.children().width()+rDivWidthWrap;
-		}
-		var left = initLeft - rDivWnew/2;
-
-		// ?? left must >=0 ??
-		if (left < 0  ){ // relateDiv.width > initleft*2
-			left = 0;
-			width = $('.container').offset().left +$('.container').outerWidth() - rDivWnew;
-		}
-	}
-	return {left:left, width:width};
 }
 
 var scale = function(IMG, maxW, maxH, factor){
@@ -255,14 +251,14 @@ var initRDiv = function () {
 		- NO need to init .relateDiv.position().left/top */
 
 	/* rDivWidth/HeightWrap is used by configWrap() & setRDivLeft/Top() */
-	rDivWidthWrap = relateDiv.outerWidth(true) - relateDiv.find('div:first').width();
-	rDivHeightWrap = relateDiv.outerHeight(true) - relateDiv.find('div:first').height();
+	rDivWidthWrap = relateDiv.outerWidth(true) - relateDiv.children().width();
+	rDivHeightWrap = relateDiv.outerHeight(true) - relateDiv.children().height();
 
 	/* Calculate Valide Space : Need updated HLBack, so require initHLB(firstHL) must before initRDiv() */
 	var cDivWidthMin = parseInt($('.contentWrap').css('min-width'), 10);
 	var rDivRightValidWidth = $('.container').outerWidth()- cDivWidthMin - rDivWidthWrap;
 	var rDivRightValidHeight = $('.container').outerHeight()-headDiv.outerHeight(true) - rDivHeightWrap;
-	var rDivBottomValidHeight = rDivRightValidHeight - (HLBack.offset().top + HLBack.outerHeight(true)); 
+	var rDivBottomValidHeight = rDivRightValidHeight - ($('.preDiv').offset().top + $('.preDiv').height() + parseInt(divs.eq(0).attr('oneLineH'))); 
 
 	/*Must set size for EVERY div.passive/active, and hide()
 	  - ALL .passive shown in right, but max-width is different
@@ -339,7 +335,7 @@ var hasRDiv = function(item, mode){
 	return target;
 }
 
-var setRDivLeft = function(target, cDiv){
+var setRDivLeft = function(target){
 	if (target == null) return;/* target must NOT null, since has been checked outside before this called*/
 	var newLeft = 0;
 	if (target.attr('location') == 'bottom'){//target.attr('location') == 'bottom'
@@ -404,12 +400,24 @@ var showRDiv = function(target, HLHeight){ // relateDiv.show('slow');
 	}
 }
 
+var updateHLB = function(base, temp){
+	/*	Depend on base - $('.highlight')
+		HLB.height has transition, which need to be varied to final value,
+		so get its height from temp,  instead of using .outHeight() directly*/
+	// HLBack.css("left",base.position().left); // HLBack.css(base.position());
+
+	// HLBack.height(base.outerHeight());
+	var borderTemp = base.outerHeight()-base.height();
+	HLBack.height(temp+borderTemp);
+	// HLBack.width(base.outerWidth());
+}
+
 var setHeight = function(object, mode){
 	var temp = 0;
 	
 	if (mode === "one-line") {
 	/* shrink, NOT highlight */ /*---v4-6--new one-line height-------*/
-		temp = object.next().children().outerHeight();
+		temp = object.attr('onelineH');
 	} else if (mode === "full") {
 	/* expand, IS highlight */
 		if(object.children().first().attr('class')=="MathJax_Preview"){
@@ -432,8 +440,8 @@ var updateHeadDiv = function(){
 	/*	Update the elements of path in headDiv when .highlight changed
 		- !! Alwarys called after updateHLB() 
 		- Need to Limit the length for every li item in headDiv*/
-	var headItem = $('.highlight').parents('ul').prev().prev();
-	headItem = $(headItem.get().reverse()); //console.log(headItem.size());
+	var headItem = $('.highlight').parents('ul').prev();
+	headItem = $(headItem.get().slice(0,-1).reverse());
 
 	var maxWidth = $('.headDiv >ul').width() - $('.headDiv >ul >li:first').width();// Limit the length
 	for (var i = 2; i <5; i++) {
@@ -451,41 +459,15 @@ var updateHeadDiv = function(){
 }
 
 var triggerAnimate = function(unit,mode){
-	if (mode == 'more') {
-		/* if mode == more, then unit==0, so expand = #item(index+0) = current highlight*/
-		var current = divs.eq(index+unit);
-		var passiveTarget = hasRDiv(current,'passive');
-		
-		/* NO passive, then nothing to do*/
-		if (passiveTarget) {
-			/*	If .passive is already shown, then action is to hide it
-				And must set target to null, for correct configWrap() and other update*/
-			if (passiveTarget.css('display')!='none' && relateDiv.css('display')!='none') {
-				hideRDiv();
-				/* Support item have both passive & active : only show one of both*/
-				passiveTarget = hasRDiv(current,'active');
-
-			};
-
-			var updatedCDiv = configWrap(passiveTarget);
-			$('.contentWrap').animate({left:updatedCDiv.left, width:updatedCDiv.width },'slow', function(){
-				var fullH = setHeight(current, "full");
-				
-				// Update postion of relateDiv and show
-				if (passiveTarget){
-					setRDivLeft(passiveTarget, updatedCDiv);
-					setRDivTop(passiveTarget, fullH);
-					showRDiv(passiveTarget, fullH);				
-				}
-				updateHLB(current, fullH);
-			});	
-		};	
-		return 0
-	};
 	if (unit == 0){	return 0; }
 	/* Only need to change .highlight when mode!=more && unit>0*/
-	var shrink = divs.eq(index);
+	var shrink = $('.highlight').eq(0);//divs.eq(index);
 	var expand = divs.eq(index+unit);
+
+	if (mode=='showTOC') { // index = -1; // unit = -1-index; index +=unit
+		expand = $('#title');
+		root.find('li>ol,li>ul').hide();
+	};
 
 	/* Get original position.top for computing $revise and other use later */
 	/* !! Must Before reset .highlight */
@@ -503,12 +485,25 @@ var triggerAnimate = function(unit,mode){
 		expand.addClass('highlight');
 
 		//6 setHeight()	/*1. Expand & Shrink : via resetting height */
-		var oneLineH = setHeight(shrink, "one-line");
+		var oneLineH = 0, time = 0;
+		if (shrink.hasClass('slowShrink') && shrink.closest('ul').prev().attr('id')==expand.closest('ul').prev().attr('id')) {
+			// console.log('has to keeped full');
+			oneLineH = shrinkOldHeight;
+			shrink.addClass('full');
+		} else{
+			oneLineH = setHeight(shrink, "one-line");
+			$('.full').each(function(index, el) {
+				shrinkOldHeight += $(this).height();
+				shrinkOldHeight -= setHeight($(this), "one-line");
+				$(this).removeClass('full');
+				time = 200;
+			});
+		}
 		var fullH = setHeight(expand, "full");	
 
 		//7-8 Update position of relateDiv and show
 		if (activeTarget) {
-			setRDivLeft(activeTarget,updatedCDiv);
+			setRDivLeft(activeTarget);
 			setRDivTop(activeTarget, fullH);
 			showRDiv(activeTarget, fullH );
 		};
@@ -527,6 +522,8 @@ var triggerAnimate = function(unit,mode){
 			{
 				slideUpHeight += slideUP.outerHeight(true);
 				slideUP.slideUp('slow');
+				if (slideUP.find('>li>div').last().size()) 
+					slideUpHeight += parseInt(slideUP.find('>li>div').last().css('margin-bottom'));
 			}
 
 			// -5- More to support usable Prev
@@ -536,6 +533,8 @@ var triggerAnimate = function(unit,mode){
 				{
 					slideUpHeight += slideUP.outerHeight(true);
 					slideUP.slideUp('slow');
+					if (slideUP.find('>li>div').last().size()) 
+						slideUpHeight += parseInt(slideUP.find('>li>div').last().css('margin-bottom'));
 				}
 			}
 
@@ -578,7 +577,18 @@ var triggerAnimate = function(unit,mode){
 		var reviseTop = expandTop - shrinkTop + slideDownHeight - slideUpHeight;
 		targetTop = root.scrollTop();
 		targetTop += reviseTop;
-		root.animate({scrollTop:targetTop},'slow');
+
+		/*body.sectionbased*/
+		if(sectionBased!=0){
+			var	hlBackTop = $('.preDiv').height() + sectionBased * expand.parents('.L_1>li').prevAll().size();
+			targetTop += HLBack.position().top - hlBackTop;
+			HLBack.animate({top:hlBackTop}, 'slow');
+		}			
+
+		setTimeout(function () { 
+		   root.animate({scrollTop:targetTop},'slow');
+		}, time);
+		
 	}
 
 	var updatedCDiv = configWrap(activeTarget);
@@ -590,99 +600,81 @@ var triggerAnimate = function(unit,mode){
 	/*---v4-8--Scrollable Highlight-------*/
 	// $('.highlight').css('background', '');
 	// $('.hlBackground').css('background', '#5bc0de');
+	index += unit;
 };
 
+var toggleHide = function(){
+	var current = $('.highlight').eq(0); //divs.eq(index);
+	var passiveTarget = hasRDiv(current,'passive');
+	
+	/* NO passive, then nothing to do*/
+	if (passiveTarget) {
+		/*	If .passive is already shown, then action is to hide it
+			And must set target to null, for correct configWrap() and other update*/
+		if (passiveTarget.css('display')!='none' && relateDiv.css('display')!='none') {
+			hideRDiv();
+			/* Support item have both passive & active : only show one of both*/
+			passiveTarget = hasRDiv(current,'active');
+
+		};
+
+		var updatedCDiv = configWrap(passiveTarget);
+		$('.contentWrap').animate({left:updatedCDiv.left, width:updatedCDiv.width },'slow', function(){
+			var fullH = setHeight(current, "full");
+			
+			/* Update postion of relateDiv and show */
+			if (passiveTarget){
+				setRDivLeft(passiveTarget);
+				setRDivTop(passiveTarget, fullH);
+				showRDiv(passiveTarget, fullH);				
+			}
+			updateHLB(current, fullH);
+		});	
+	};	
+	return 0
+}
 
 var main = function(){
 	/* Reorganize & make it scroll*/
 	init();
 
-	/*---v4-8--Scrollable Highlight-------*/
-	// $(window).bind('mousewheel DOMMouseScroll', function(event){
- 	//  $('.highlight').css('background', '#5bc0de');
-	// 	$('.hlBackground').css('background', '#fff');
-	// });
+	setClickHandler();
+};
 
-	/*	Action:
-		Array key - change .highlight 
-		Space key - show or hide .passive */
-	$(document).keydown(function(key) {	
-		/* Disable scroll until last is finished*/
-		if (root.is(':animated')|| $('.contentWrap').is(':animated')) {	return;	};
+$(document).ready(main);
 
-		var unit = 0, mode = 'key';	
-		switch(parseInt(key.which,10)) {
-			case 37:// Left : -1 | <-1
-				event.preventDefault();
-				if (index>0){
-					var expand = divs.eq(index-1);
-					if(expand.parent().parent().css('display') != 'none'){
-						unit = -1;
-					} else{
-						var expandChildren = expand.parents('ul[style="display: none;"], ol[style="display: none;"]').last();
-						var expandID = parseInt(expandChildren.prev().prev().attr('id').replace("item", ""));
-						unit = expandID-index;
-					}
-				}
-				break;
-			case 38:// Up : <0
-				event.preventDefault();
-				var shrinkParent = divs.eq(index).parents('li').eq(1).children(':first-child');
-				if (shrinkParent.size() ==1) {
-					var expandID = parseInt(shrinkParent.attr('id').replace("item", ""));
-					unit = expandID-index;
-				};
-				break;
-			case 39: // Right : +1
-				event.preventDefault();
-				if (index+1<num){
-					unit = 1;
-				} else{/* When reach last item, then next will be 1st title*/
-					unit = -index;
-					$('.L_1').children().last().children('ul').slideUp();
-				}				
-				break;
-			case 40:// Down : >0 	
-				event.preventDefault();
-				var childrenSize = divs.eq(index).siblings('ul,ol').find('li>div:first-child').size();
-				unit = 1 + childrenSize;
-				if (index+unit > num-1) {
-					//unit = 0;
-					/* When reach last item, then next will be 1st title*/
-					unit = -index;
-					$('.L_1').children().last().children('ul').slideUp();
-				};			
-				break;
-			case 32:
-				event.preventDefault();
-				unit = 0;
-				mode = 'more';
-				break;
-		}; // END -- switch
-		
-		triggerAnimate(unit,mode);
-		index += unit;
+/* Event Handlers : Scroll, Click, Keydown*/
+/* Action-scroll */
+/*---v4-8--Scrollable Highlight-------*/
+// $(window).bind('mousewheel DOMMouseScroll', function(event){
+	//  $('.highlight').css('background', '#5bc0de');
+// 	$('.hlBackground').css('background', '#fff');
+// });
 
-		// return false; // disable scroll via arrow key
-	});
-
+/* Action-click */
+var setClickHandler = function(){
 	/* Action-click : change .highlight if clicking item in .contentDiv */
-	$(".contentDiv li>div:first-child").click(function(event) {
+	$('.L_1').find("li>div:first-child").click(function(event) {
 		/* Disable scroll until last is finished*/
-		if (root.is(':animated')|| $('.contentWrap').is(':animated')) {	return;	};
+	if (root && (root.is(':animated')|| root.parent().is(':animated')|| relateDiv.is(':animated')) ) {
+			console.warn('Animation has NOT finished!', root.is(':animated'), root.parent().is(':animated'), relateDiv.is(':animated'));
+			return
+	};
 
 		/* Act on the event */
 		var expandID = parseInt($(this).attr('id').replace("item", ""));
 		unit = expandID-index;// console.log(expandID, unit);
 
 		triggerAnimate(unit,'click');
-		index += unit;
 	});
 
 	/* Action-click : show item/image in a popup layer if clicking it in .relateDiv */
 	relateDiv.find('div>div.active').click(function(event) {
 		/* Disable scroll until last is finished*/
-		if (root.is(':animated')|| $('.contentWrap').is(':animated')) {	return;	};
+	if (root && (root.is(':animated')|| root.parent().is(':animated')|| relateDiv.is(':animated')) ) {
+			console.warn('Animation has NOT finished!', root.is(':animated'), root.parent().is(':animated'), relateDiv.is(':animated'));
+			return
+	};
 
 		if ($(this).attr('id').match(/^fn:img:/)) {
 			var url = $(this).find('img').attr('src');
@@ -703,6 +695,87 @@ var main = function(){
 		$($(this).attr('target')).click();
 	});
 
-};
+	/* Action-click : switch to mode='showToc' if click #title */
+	$('#title').click(function(event) {
+		if (index!=-1) {
+			mode='showTOC';
+			unit = -1-index;
+			triggerAnimate(unit,'showTOC');
+		};
+	});
 
-$(document).ready(main);
+}
+
+/*	Action - keydown: */
+$(document).keydown(function(key) {	
+	/* Disable scroll until last is finished*/
+	if (root && (root.is(':animated')|| root.parent().is(':animated')|| relateDiv.is(':animated')) ) {
+			console.warn('Animation has NOT finished!', root.is(':animated'), root.parent().is(':animated'), relateDiv.is(':animated'));
+			return
+	};
+
+	var unit = 0, mode = 'key';	
+	switch(parseInt(key.which,10)) {
+	/* Array key - change .highlight */
+		case 37:// Left : -1 | <-1
+			event.preventDefault();
+			if (index>0){
+				var expand = divs.eq(index-1);
+				if(expand.parent().parent().css('display') != 'none'){
+					unit = -1;
+				} else{
+					var expandChildren = expand.parents('ul[style="display: none;"], ol[style="display: none;"]').last();
+					var expandID = parseInt(expandChildren.prev().attr('id').replace("item", ""));
+					unit = expandID-index;
+				}
+			} else if(index == 0){
+				mode='showTOC';
+				unit = -1-index;
+			}
+			break;
+		case 38:// Up : <0
+			event.preventDefault();
+			var shrinkParent = divs.eq(index).parents('li').eq(1).children(':first-child');
+			if (shrinkParent.size() ==1) {
+				var expandID = parseInt(shrinkParent.attr('id').replace("item", ""));
+				unit = expandID-index;
+			} else if(divs.eq(index).closest('ul').hasClass('L_1')){
+				mode='showTOC';
+				unit = -1-index;
+			}
+			break;
+		case 39: // Right : +1
+			event.preventDefault();
+			if (index+1<num){
+				unit = 1;
+			} else{/* When reach last item, then next will be 1st item #item0*/
+				unit = -index;
+				$('.L_1').children().last().children('ul').slideUp();
+			}				
+			break;
+		case 40:// Down : >0 	
+			event.preventDefault();
+			var childrenSize = divs.eq(index).siblings('ul,ol').find('li>div:first-child').size();
+			unit = 1 + childrenSize;
+			if (index+unit > num-1) {
+				/* When reach last item, then next will be 1st title*/
+				// unit = -index; // !! ??navigate to first item #item0
+				// $('.L_1').children().last().children('ul').slideUp();
+				mode='showTOC';
+				unit = -1-index;
+			};
+			break;
+	
+	/* Space key - show or hide .passive */
+		case 32:// unit == 0; 
+			event.preventDefault();
+			toggleHide();
+			break;
+	}; // END -- switch
+	
+	/* may return without further action if unit == 0*/
+	triggerAnimate(unit,mode); 
+
+	// return false; // disable scroll via arrow key
+});
+

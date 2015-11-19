@@ -1,0 +1,253 @@
+======
+9.0: Better structure and more configure support 
+======
+- revised from CAScroll v8.8 for easy convert to ScrollSlide
+- also for CAScroll with more configuration
+	* mode='showTOC' for Navigation to #title
+	* div.detailed ==> children.slowShrink
+	* body.sectionBased
+
+- Set #title from $('title')
+- Extract wrapCDiv() from specificOrganizeBODY():reOrganizeCDiv()
+- Extract reOrganizeRDiv() from specificOrganizeBODY:fillRelateDiv()
+- Update the way of setting and getting one-line height via object.attr('onelineH');
+- Add initCDivWrap(), copied/renamed from initWrap() to , called in init()
+
+- Move initialisation on 1st HL target to the end of init()
+
+- initCDivWrap() need cHeight as parameter to set root.height()
+
+- Extract event handlers for setting actions from document.ready()
+  * Extract toggleHidden() from triggerAnimate('more')
+  * Extract setClickHandler() for dom.click()
+  * call $(document).keydown() out of document.ready()
+
+- Define mode='showTOC' for Navigation to #title:
+
+- Limit animate also when relateDiv.is(':animated')
+
+
+
+------------------------------------------------------
+check more revision detals from following 0.0 to 0.5
+
+======
+0.5 : update slideUPHeight & add support for Slow Shrink and Section Based
+======
+1. Update slideUPHeight in triggerAnimate()
+Because removing div>p(one-line) make li>div's margin-bottom add height to its parent ul>li,
+then, can NOT get via slideUP.outerHeight(true)
+
+2. Add support to configure with **div.detailed/.slowShrink **
+- div.detailed will add .slowShrink to all children items
+- .slowShrink will keep the item as expanded in full when switching
+focus among its siblings
+- if focus switch to parent or children, the kept item will be shrink
+to one-line
+
+CAScroll.css: set white-space:normal; to .full
+CAScroll.js:
+- init(): addClass(slowShrink) to all children of .detailed
+- triggerAnimate(): set onelineH based on following two:
+	* whether shrink.hasClass(slowShrink)
+	* whether switching focus among its siblings
+- triggerAnimate(): if not fulfil above two, then
+	* remove .full
+	* reset height(one-line)
+	* update shrinkOldHeight
+- triggerAnimate():scroll(): setTimeout(scroll()) to wait if there is shrink caused via .full
+
+3. Add support to configure with **body.sectionBased **
+.sectionBased will lead the highlight top to be fixed with its .L_1section top
+
+- Add global var sectionBased = false
+-  init(): if body.hasClass(sectionBased)
+	* Set sectionBased==true
+	* and then, update to $(#item0): onelineH + margin-bottom later
+- triggerAnimate(): reset HLBack.top and revise targetTop if
+sectionBased
+
+4. move index+=unit into triggerAnimate()
+
+
+
+======
+0.4 : Add showTOC()
+======
+------------
+Design Policy
+------------
+What to do: show only title with section.L_1 headings
+
+When to use:
+- first init() the page : the beginning of a presentation
+- triggerAnimate: index+unit <0
+- triggerAnimate: index+unit >max
+- Freely Naivigation
+
+How to do: similar to original init()
+- Highlight title, and expand it to full
+- Shade section.L_1 headings, and shrink them in one-line
+- hide all other detailed content
+
+Other need to do"
+- set index=-1 to indicate the state of showing TOC
+
+Important revision:
+- init part for setting title:
+	! may not need after update the parser for creating  list
+
+Un-related revision:
+- Limit animate also when relateDiv.is(':animated')
+
+Diffrent revision:
+- call initHLB() in the end of showTOC(). which will be used by last navigation
+
+------------
+Implementation
+------------
+- Define mode='showTOC' for Navigation to #title:
+	* Add support in triggerAnimate(): if mode=='showTOC',
+		then, expand = $('#title');
+		then, root.find('li>ol,li>ul').hide();
+
+- Before calling triggerAnimate('showTOC'),
+	* mode='showTOC';
+	* unit = -1-index;	
+
+- After calling triggerAnimate('showTOC'),
+	* index+=unit
+
+- Call triggerAnimate('showTOC') when:
+	* $('#title').click()
+	* keypress to index+unit < 0 ;
+		! left: index = 0
+		! up: index.L_1
+		! ?? down: index+unit = max;
+
+!! right : When reach last item, then next will be 1st item #item0, not #title !!
+!! Diffrent from other navigate key
+
+
+
+======
+0.3  : More Revision for better structure
+======
+- Rename to wrapCDiv() from reOrganizeCDiv():
+* only wrap root.contentDiv and set preDiv and postDiv
+* set pre/post div as class, not id
+* move process on inserting title and HLBack out
+
+- Move following to init()
+* out of wrapCDiv(): Replace #title with $('title'), also set @oneLineH later
+* out of wrapCDiv(): init() set HLBack, and insert to root before return
+* out of initCDivWrap() : Set #id and @oneLineH on $divs, also set height to one-line
+!! $divs includes #title
+
+- initCDivWrap() need cHeight as parameter to set root.height()
+
+- init(): before return,  set the first highlight item of cDiv
+* Insert HLBack, and initHLB() to set its top
+* re-insert RDiv ??
+* set min/maxIndex
+* highlight first item: set index, set .highlight, setHeight(full)
+
+
+
+======
+0.2 : Revision for dependent init on size and position
+======
+Based on the following 3 facts in orginal implementation
+	!! HLBack.top is actually init as #preDiv.height(), So to make init*() NOT depend on initHLB() 
+	   Use $('#preDiv'), instead of HLBack in init***()
+	!! #preDiv.height() + #postDiv.height() is assumed to root.height() to make root scrollable
+	!! root.height() was init via css, but then need to update in js, since .headDiv prepends
+
+- Copied specificOrganizeBODY() and delete orginal
+
+- Add initialization on global var root, divs, num, targetTop
+
+- Add initCDivWrap(), copied/renamed from initWrap() to , called in init()
+- Prepend to initCDivWrap(): initialization on size/position for cDiv and its children from init()
+  	* headDiv.oueterHeight(true) -> root.height() -> #preDiv.height() -> #postDiv.height()
+  	* divs + #title : setHeight('one-Line');
+  	* hide details, except ul.L_1>li
+  	- .contentWrap : set initLeft and initWidth
+
+- Copied initHLB() to init, and deltet original
+- !!Update way to init HLBack.top 
+	NOT be depeneded by other init*()
+
+- Move initialization on 1st HL target to the end of init()
+
+- !!Update initRDiv() to make it NOT depend on initHLB(),
+	Only must after finalizing DOM framework
+	* relateDiv.children(), replace relateDiv.find('div:first')
+	* $('#preDiv').offset().top + $('#preDiv').height(), replace HLBack.offset().top
+	* parseInt(divs.eq(0).attr('oneLineH')), replace HLBack.outerHeight(true)
+
+
+
+======
+0.1 : Revision for better structure, used as basement of SlideScroll
+======
+- Limit animate also when relateDiv.is(':animated')
+
+- Finalise the framework after document.ready:
+	body >DIV.container
+			>DIV.headDiv
+					>ul>li*
+			>DIV.contentWrap
+					>DIV.contentDiv == root
+							>p.preDiv
+							? div.Title
+							>ul.L_1
+							>p.postDiv
+					>DIV.hlBackground
+			>DIV.relateDiv
+
+	body >DIV.above
+
+- Extract reOrganizeCDiv(CDiv) from specificOrganizeBODY()
+	* add contentWrap to root.contentDiv
+	* re-organise root.contentDiv to finalised framework
+	* Add process of inserting TITLE from head>title
+		!!del inital title : root.find('.L_1>li:first-child').remove()
+		!!may not need after update the parser:listABLE()
+	- update triggerAnimate() : shrink = $('.highlight');
+
+- Extract reOrganizeRDiv() from specificOrganizeBODY:fillRelateDiv()
+	* only fill RDiv with footnotes used in CDiv
+	* 1. re-wrap footnotes in RDiv()
+	* 2. update footnoot-ref in CDiv: Without pre insert RDiv to body,
+		 Find relateFN from RDiv, not via $('#id'),
+
+- Extract toggleHidden() from trggerAnimate('more')
+	* it is not extractly same as navigate to change .highlight
+	* but, just same elements in similar order
+
+- Extract event handlers for setting actions from document.ready()
+Add setClickHandler():
+	* Display image in full screen: click relateDiv
+	* Navigate: click headDiv
+	* Navigate: click root.contentDiv
+$(document).keydown():
+	* Navigate: keydown of 'arraw'
+	* toggleHide() : 'keydown of space' key 
+
+- Update init() on first .highlight
+	* index = -1; // start from showToc
+	* firstHL = $('#title')
+
+- Update the way of setting and getting one-line height
+	* init(): append div>p>one-line to all divs + div#title,
+		then, set div[@onelineH] after appending , 
+		then, remove the appended div>p
+	* setHeight('one-line') : temp = object.attr('onelineH');
+
+	* Update .prev().prev() to .prev() : updateHeadDiv();
+
+
+======
+0.0 : Branch from CAScroll 8.8
+======
