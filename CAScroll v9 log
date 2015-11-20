@@ -1,4 +1,28 @@
 ======
+9.2: Support Full display image with content item
+======
+Two Mode: img.activeFull & img.passiveFull
+1. activeFull: if switch focus to item with img.activeFull,
+	- display image in full screen actively WITH contentItem
+2. passiveFull: if focused/highlight item has img.passiveFull
+	- press 'space' to show display image in full screen WITHOUT contentItem
+	! if also has 'hide:**', space will show hide, 
+	!! and full dispaly image need 'click'
+
+3. activeFull and pasiveFull will be scale(50) in RDiv
+
+#above	>div#aboveConD>p
+		>div#aboveImgD>image
+
+4. More accurate on headDiv
+
+CAScroll.css
+5. Bigger HeadDiv 
+6. More clear Level in contentDiv with padding
+
+
+
+======
 9.1: Better Look Design for Seminar Demo 1113
 ======
 1. headDiv with pure Css

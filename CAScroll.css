@@ -50,11 +50,19 @@ body {
 
 .contentDiv ul,.contentDiv ol{
 	list-style-position: inside; /* Bullet is hidden since li[overflow:hide]*/
-	padding-left: 15px;
-	/*padding-right: 15px;*/
-	width:98%;
+	padding-left: 3%;
+	width:97%;
 	border-radius:10px;
 }
+
+.contentDiv ul {
+	list-style-type: disc; }
+
+.contentDiv ul ul {
+	list-style-type: square; }
+
+.contentDiv ul ul ul {
+	list-style-type: circle; }
 
 
 /*1. Expand & Shrink*/
@@ -151,6 +159,7 @@ body {
 /*Styles for div.relateDiv, similar to popover of bootstrap*/
 .relateDiv{
 	padding: 1px;
+	font-size:25px;
 	font-style: normal;
 	font-weight: normal;
 	letter-spacing: normal;
@@ -270,12 +279,6 @@ body {
     background-repeat: no-repeat;
 }
 
-/*Style for popup to show image */
-#above >div >img{
-	background-color: white;
-	display:inline-block;
-}
-
 
 /*Styel for space between multi line in one block*/
 .contentDiv li>div>p>br{
@@ -354,22 +357,22 @@ body {
 	width: 100%;
 	background-color:white;
 	
-	font-size: 125%;
-	font-weight: 600;
+	font-size: 150%;
+	font-weight: 700;
 }
 
 /*Differ items in headDiv based on its level */
 #L2 div{
 	font-size: 90%;
-	font-weight: 500;
+	font-weight: 700;
 }
 #L3 div{
 	font-size: 80%;
-	font-weight: 400;
+	font-weight: 600;
 }
 #L4 div{
 	font-size: 75%;
-	font-weight: 300;
+	font-weight: 500;
 }
 
 .breadcrumb a {
@@ -379,7 +382,7 @@ body {
 	float: left;
 	line-height: 2.5em;/*36px*/
 	/*need more margin on the left of links to accomodate the numbers*/
-	padding: 0 10px 0 10px;/*0 10px 0 60px*/
+	padding: 0 0.7em 0 0.7em;/*0 10px= width*0.707 0 60px*/
 	position: relative;
 }
 
@@ -459,4 +462,32 @@ body {
 
 .breadcrumb >a:first-child >div {
 	padding-left: 0;
+}
+
+/*Style for popup to show image */
+#above {
+	height:95%;
+	width:95%;
+	display: none;
+}
+
+#aboveConD {
+	font-size:2em;
+	/*font-weight: 500;*/
+	width:94%;
+	margin-bottom:10px;
+	background:rgb(51,51,51);
+	color:white;
+	padding-left: 3%;
+	padding-right: 3%;
+}
+
+#aboveImgD{
+	/*width:100%;*/
+}
+
+#aboveImgD>img{
+	background-color: white;
+	/*display:inline-block;*/
+	position:absolute;
 }

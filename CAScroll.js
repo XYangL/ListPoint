@@ -23,9 +23,8 @@ var fnContent = '<p>Scroll List</p>';
 var init = function(){
 	/*configure screen/viewpoint Style*/
 	$('html').append($('<div/>',{'id': 'footDiv'}));
-	$('#footDiv').append($('<img/>',{'id': 'logo', 'src':logoUrl}));
-	$('#footDiv').append($(fnContent));
-
+	if (logoUrl.length) $('#footDiv').append($('<img/>',{'id': 'logo', 'src':logoUrl}));
+	if (fnContent.length) $('#footDiv').append($(fnContent));
 
 	/*Insert Presentation Title*/
 	$('ul.L_1>li:first-child').remove();// may not need after update the parser:listABLE()
@@ -62,8 +61,7 @@ var init = function(){
 
 	/*A-8. Other special requirement of CAScroll on DOM structure */
 	/* div#above to show image in a popup layer */
-	$('body').append($('<div/>',{id: 'above', 'style':'display:none;'}));
-	$('#above').append($('<div/>'));
+	$('body').append($('<div id="above"><div id="aboveConD"></div><div id="aboveImgD"></div></div>'));
 	
 	/*A-3. Static Highilght Background : Add div.hlBackground to highlight in Blue */
 	HLBack = $("<div/>", {class: "hlBackground"});
@@ -105,7 +103,7 @@ var init = function(){
 
 
 	/*E. More Global Style Setting*/	
-	$('html').css('background-image', 'url(' + imageUrl + ')');
+	if (imageUrl.length) $('html').css('background-image', 'url(' + imageUrl + ')');
 };
 
 
@@ -141,7 +139,7 @@ var configWrap = function(target){
 	/* Only .relateDiv>target with location=right may change margin-left and width of .cotentDiv */
 	if (target != null && target.attr('location') == 'right') {
 		var rDivWnew = target.width()+rDivWidthWrap;
-		if (target.attr('id').match(/^fn:img:/)){
+		if (/^fn:img/.test(target.attr('id'))){
 			rDivWnew = target.children().width()+rDivWidthWrap;
 		}
 		var left = initLeft - rDivWnew/2;
@@ -176,7 +174,12 @@ var reOrganizeRDiv = function( RDiv ){
 				var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'passive'}).append($(this).html());
 				break;
 			case 'img':
-				var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'active'}).append($(this).find('img').clone());
+				var temp = $(this).find('img').clone();
+				var temp = $('<div/>',{id: $(this).attr('id'), 'class': temp.attr('class')}).append(temp);
+				// if (temp.hasClass('passiveFull'))
+				// 	temp.addClass('passive');
+				// else
+					temp.addClass('active');
 				break;
 			default: // 'tip' & 'one'
 				var temp = $('<div/>',{id: $(this).attr('id'), 'class': 'active'}).append($(this).html());
@@ -196,6 +199,8 @@ var reOrganizeRDiv = function( RDiv ){
 				relateFN.attr('location','right');
 				break;
 			case 'img':
+				// var tempLink = relateFN.hasClass('passiveFull') ? 
+				// 				$('<a/>',{href: $(this).attr('href'), 'class': 'footnote-passive'}):
 				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-active'});
 				tempLink.html('<span class="ui-icon ui-icon-image"></span>');
 				if ($(this).parents('li>div').hasClass('des')) {
@@ -286,7 +291,7 @@ var initRDiv = function () {
 
 		} else { //hasClass('active')
 			/* SET $(this).height/width for every image-active in relateDiv via img.onload() */
-			if ( $(this).attr('id').match(/^fn:img:/)) {
+			if (/^fn:img/.test($(this).attr('id'))) {
 				
 				$(this).children().load(function() { 					
 					var IMG = $(this); //img
@@ -294,6 +299,15 @@ var initRDiv = function () {
 					var origHeight = IMG.get(0).naturalHeight;
 
 					var imgLoc = $(this).parent().attr('location');
+					if ($(this).hasClass('activeFull') || $(this).hasClass('passiveFull')){
+						var minFullImg = 50;
+						if(origWidth>minFullImg || origHeight > minFullImg) {
+							scale(IMG, minFullImg, minFullImg, 1);
+						} else {
+							IMG.css("width",origWidth);
+							IMG.css("height",origHeight);
+						}
+					} else
 					if (imgLoc == 'right'){
 						if(origWidth>rDivRightValidWidth || origHeight > rDivRightValidHeight) {
 							scale(IMG, rDivRightValidWidth, rDivRightValidHeight, 1);
@@ -355,7 +369,7 @@ var setRDivLeft = function(target){
 	var newLeft = 0;
 	if (target.attr('location') == 'bottom'){//target.attr('location') == 'bottom'
 		var rDivWnew = target.width()+rDivWidthWrap;
-		if (target.attr('id').match(/^fn:img:/)){
+		if (/^fn:img/.test(target.attr('id'))){
 			rDivWnew = target.children().width()+rDivWidthWrap;
 		}
 		newLeft = $('.container').offset().left + ($('.container').outerWidth()-rDivWnew)/2;
@@ -378,7 +392,7 @@ var setRDivTop = function(target, HLHeight){
 		newTop = HLBack.offset().top + HLHeight - 5;//parseInt(relateDiv.css('margin-top'), 10)
 	} else {// location == right
 		var rDivHnew = (target.height()+rDivHeightWrap);
-		if (target.attr('id').match(/^fn:img:/)){
+		if (/^fn:img/.test(target.attr('id'))){
 			rDivHnew = (target.children().height()+rDivHeightWrap);
 		}
 		newTop = HLBack.offset().top + HLHeight/2 - rDivHnew/2;
@@ -415,6 +429,35 @@ var showRDiv = function(target, HLHeight){ // relateDiv.show('slow');
 	}
 }
 
+var showAbove = function(conHTML, imgURL){
+	$('#above').bPopup({position: ['auto', 'auto'],amsl:0});
+	$('#above').css('visibility','hidden');
+
+	$('#aboveConD').html(conHTML)
+	$('#aboveImgD').html($('<img/>',{src: imgURL}));
+
+	// var imgMaxH = $('#above').height() - $('#aboveConD').outerHeight(true);//'100%';
+	// $('#aboveImgD').css('max-height', imgMaxH);
+
+	var IMG = $('#aboveImgD>img');
+	var maxW = $('#above').width();
+	var maxH = $('body').height()*0.95 - $('#aboveConD').outerHeight(true);//'100%';
+	if (conHTML.length) {
+		$('#aboveConD').show();
+	} else{
+		$('#aboveConD').hide();
+		maxH = $('body').height()*0.95;
+	};
+	
+	scale(IMG, maxW, maxH, 1);console.log($('#aboveConD').outerHeight(true));
+	IMG.css('left',   ($('html').width()*0.95 - IMG.width())/2   )
+
+	$('#above').height($('#aboveConD').outerHeight(true)+IMG.height())
+	var topTemp = ($('html').height() - $('#above').height())/2;
+	$('#above').css('top', topTemp);
+	$('#above').css('visibility','visible');
+
+}
 var updateHLB = function(base, temp){
 	/*	Depend on base - $('.highlight')
 		HLB.height has transition, which need to be varied to final value,
@@ -463,11 +506,10 @@ var updateHeadDiv = function(){
 		var temp = headDiv.find('a:nth-child('+i+')');
 		if (headItem.eq(i-2).html() != null) {
 			temp.attr('target', '#'+headItem.eq(i-2).attr('id'));
-			var arrow = '';//<span class="arrow"></span>';
-			temp.html('<div>'+headItem.eq(i-2).text() + arrow +'</div>');
+			temp.html('<div>'+headItem.eq(i-2).html().match(/<p>([^<]*)/)[1]+'</div>');//headItem.eq(i-2).text()
 			i == 4 ? temp.children().css('max-width',  availWidth- parseInt(temp.children().css('padding-left'),10)):
 					 temp.children().css('max-width',  availWidth*0.5); // Limit the length
-			availWidth = availWidth - temp.outerWidth()-20;
+			availWidth = availWidth - temp.outerWidth()- parseInt(temp.children().css('padding-left'),10);
 
 			temp.effect('slide', { direction: 'left', mode: 'show' }, 'slow');
 		} else {
@@ -520,11 +562,20 @@ var triggerAnimate = function(unit,mode){
 		var fullH = setHeight(expand, "full");	
 
 		//7-8 Update position of relateDiv and show
+		var closeAbove = $('#above').css('display')==='block';
 		if (activeTarget) {
 			setRDivLeft(activeTarget);
 			setRDivTop(activeTarget, fullH);
 			showRDiv(activeTarget, fullH );
+
+			if (activeTarget.hasClass('activeFull') && /^fn:img/.test(activeTarget.attr('id'))) {
+				mainItem = $("<div/>").html(expand.html());
+				mainItem.find('sub').remove();
+				showAbove(mainItem.html(), activeTarget.find('img').attr('src'))
+				closeAbove = false;
+			}
 		};
+		if(closeAbove) $('#above').bPopup().close();
 
 		//9	/*2. Show & Hide on the related items : based on the unit */
 		var slideUpHeight = 0;  var slideDownHeight = 0;
@@ -650,7 +701,7 @@ var toggleHide = function(){
 			updateHLB(current, fullH);
 		});	
 	};	
-	return 0
+	return passiveTarget;
 }
 
 var main = function(){
@@ -695,17 +746,8 @@ var setClickHandler = function(){
 			return
 		};
 
-		if ($(this).attr('id').match(/^fn:img:/)) {
-			var url = $(this).find('img').attr('src');
-			$('#above >div').first().replaceWith($('<div/>').append($('<img/>',{src: url})));
-
-			var IMG = $('#above >div >img');
-			var maxW = $(window).width();
-			var maxH = $(window).height();
-			var factor = 0.95;
-			scale(IMG, maxW, maxH, factor);
-			
-			$('#above').bPopup({position: ['auto', 'auto'],amsl:0});
+		if (/^fn:img/.test($(this).attr('id'))) {
+			showAbove('', $(this).find('img').attr('src'));
 		};
 	});
 
@@ -789,7 +831,21 @@ $(document).keydown(function(key) {
 	/* Space key - show or hide .passive */
 		case 32:// unit == 0; 
 			event.preventDefault();
-			toggleHide();
+			if( toggleHide()) break;
+
+			if($('#above').css('display')==='block'){
+				$('#above').bPopup().close();
+				break;
+			}
+					
+			if( relatedTarget = hasRDiv($('.highlight'),'active')){
+				if (/^fn:img/.test(relatedTarget.attr('id'))) {
+					// mainItem = $("<div/>").html($('.highlight').html());
+					// mainItem.find('sub').remove();
+					showAbove('', relatedTarget.find('img').attr('src'))
+				}				
+			}
+
 			break;
 	}; // END -- switch
 	
