@@ -16,15 +16,23 @@ var headDiv = null;
 
 var sectionBased = false;
 
-var imageUrl = 'images/circlebg.png';
-var logoUrl = 'images/hkulogo.png';
-var fnContent = '<p>Scroll List</p>';
+var configs = {};
+/* set all default glboal var */
+configs["animateDur"] = 'slow';
+configs["hlPosition"] = '0.3';
+
+configs["imageUrl"] = 'CAScroll/circlebg.png';
+configs["logoUrl"] = 'CAScroll/hkulogo.png';
+configs["fnContent"] = 'List Point';
+
+configs["sectionBased"] = 'false';
+
 
 var init = function(){
 	/*configure screen/viewpoint Style*/
 	$('html').append($('<div/>',{'id': 'footDiv'}));
-	if (logoUrl.length) $('#footDiv').append($('<img/>',{'id': 'logo', 'src':logoUrl}));
-	if (fnContent.length) $('#footDiv').append($(fnContent));
+	if (configs["logoUrl"].length) $('#footDiv').append($('<img/>',{'id': 'logo', 'src':configs["logoUrl"]}));
+	$('#footDiv').append($('<p/>').html(configs["fnContent"]));// if (configs["fnContent"].length) //($(fnContent));
 
 	/*Insert Presentation Title*/
 	$('ul.L_1>li:first-child').remove();// may not need after update the parser:listABLE()
@@ -37,7 +45,7 @@ var init = function(){
 			$(this).addClass('slowShrink');
 		});
 	});
-	if($('body').hasClass('sectionBased')) sectionBased = true;
+	if(configs["sectionBased"]==='true') sectionBased = true;
 
 	/*A: Reorganize the structure of DOM :  specificOrganizeBODY */
 	root = $('div.contentDiv');
@@ -51,7 +59,7 @@ var init = function(){
 	
 	/*A-7 headDiv to show elements in deep path from root/title to .highlight*/
 	headDiv = $('<div/>',{'class': 'breadcrumb flat'});
-	headDiv.append($('<a href="#" target="#title"><div><span class="ui-icon ui-icon-home"></span> HOME </div></a>'))
+	headDiv.append($('<a href="#" target="#title" style="color:white;"><div><span class="ui-icon ui-icon-home"></span> H </div></a>'))
 	headDiv.append($('<a href="#" id="L2"></a>'));
 	headDiv.append($('<a href="#" id="L3"></a>'));
 	headDiv.append($('<a href="#" id="L4"></a>'));
@@ -103,7 +111,7 @@ var init = function(){
 
 
 	/*E. More Global Style Setting*/	
-	if (imageUrl.length) $('html').css('background-image', 'url(' + imageUrl + ')');
+	if (configs["imageUrl"].length) $('html').css('background-image', 'url(' + configs["imageUrl"] + ')');
 };
 
 
@@ -119,7 +127,7 @@ var initCDivWrap = function( cDiv, cHeight ) {
 	cDiv.height(cHeight);
 
 	/*Height of preDiv decide the position.top of .highlight*/
-	targetTop = 0.3;/*init as percentage, later set to cDiv.scrollTop()*/
+	targetTop = parseFloat(configs["hlPosition"]);// 0.3;/*init as percentage, later set to cDiv.scrollTop()*/
 	cDiv.find('.preDiv').height(cDiv.height() * targetTop);
 	cDiv.find('.postDiv').height(cDiv.height() * (1-targetTop));
 
@@ -209,9 +217,13 @@ var reOrganizeRDiv = function( RDiv ){
 				};
 				relateFN.find('img').hasClass('bottom')? relateFN.attr('location','bottom'):relateFN.attr('location','right');
 				break;
-			case 'tip':
+			case 'rtip':
 				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-active'});
 				relateFN.attr('location','right');
+				break;
+			case 'btip':
+				var tempLink = $('<a/>',{href: $(this).attr('href'), 'class': 'footnote-active'});
+				relateFN.attr('location','bottom');
 				break;
 			case 'one':
 				var tempLink = null;
@@ -265,6 +277,19 @@ var initMathJax = function(){
 	relateDiv.hide();
 }
 
+/*Support Customer image size*/
+var imgSizeCustomer = {};
+var hasImgCustomer = function(imgTag){
+	if (imgTag in imgSizeCustomer){
+		imgSel = imgTag.replace(/:/g, "\\:");
+		imgSel = '#'+imgSel+'>img';
+		$(imgSel).width(imgSizeCustomer[imgTag][0]);
+		$(imgSel).height(imgSizeCustomer[imgTag][1]);
+		return true;
+	} else 
+		return false;
+}
+
 var initRDiv = function () {
 	/*	Init size of divs in .realteDiv differently, since right/bottom have differet valid space,
 		- passive v.s. active ; right v.s. bottom 
@@ -292,6 +317,7 @@ var initRDiv = function () {
 		} else { //hasClass('active')
 			/* SET $(this).height/width for every image-active in relateDiv via img.onload() */
 			if (/^fn:img/.test($(this).attr('id'))) {
+				if (!hasImgCustomer($(this).attr('id')))
 				
 				$(this).children().load(function() { 					
 					var IMG = $(this); //img
@@ -328,9 +354,13 @@ var initRDiv = function () {
 					}
 				}); // end of onload() to reset height/width
 
-			} else if ($(this).attr('id').match(/^fn:tip:/)){
+			} else if ($(this).attr('id').match(/^fn:rtip:/)){
 				$(this).css('max-height', rDivRightValidHeight);
 				$(this).css('width', Math.min($('.container').width()*0.4, rDivRightValidWidth, $(this).width()));
+				$(this).css('height', $(this).height());
+			} else if ($(this).attr('id').match(/^fn:btip:/)){
+				$(this).css('max-height', rDivBottomValidHeight);
+				$(this).css('width', $('.container').width()*0.8);
 				$(this).css('height', $(this).height());
 
 			// } else if ($(this).attr('id').match(/^fn:one:/)){
@@ -383,7 +413,7 @@ var setRDivLeft = function(target){
 		$('.container').offset().left <= [$('.container').outerWidth() - target.children().width()]/2 */
 	var minL = -rDivWidthWrap/2;
 	newLeft = newLeft< minL ? minL : newLeft;
-	relateDiv.css('left', newLeft);// relateDiv.animate({left:newLeft},'slow');
+	relateDiv.css('left', newLeft);// relateDiv.animate({left:newLeft},configs["animateDur"]);
 }
 var setRDivTop = function(target, HLHeight){
 	if (target == null) return;/* target must NOT null, since has been checked outside before this called*/
@@ -401,18 +431,18 @@ var setRDivTop = function(target, HLHeight){
 
 	var minT = root.offset().top;// - parseInt(relateDiv.css('margin-top'))
 	newTop = newTop< minT ? minT : newTop;
-	relateDiv.animate({top:newTop},'slow');// relateDiv.css('top', newTop);
+	relateDiv.animate({top:newTop},configs["animateDur"]);// relateDiv.css('top', newTop);
 }
 
-var hideRDiv = function(){ // relateDiv.hide('slow');
+var hideRDiv = function(){ // relateDiv.hide(configs["animateDur"]);
 	/* 	Must hideRDiv() when .highlight is changed, since the locations of relateDiv are vairous and may cause confused animation*/
 	if ($('.hlSupport').attr('location') == 'bottom'){
-		relateDiv.effect('slide', { direction: 'up', mode: 'hide' }, 'slow');
+		relateDiv.effect('slide', { direction: 'up', mode: 'hide' }, configs["animateDur"]);
 	} else {
-		relateDiv.effect('slide', { direction: 'right', mode: 'hide' }, 'slow');
+		relateDiv.effect('slide', { direction: 'right', mode: 'hide' }, configs["animateDur"]);
 	}
 }
-var showRDiv = function(target, HLHeight){ // relateDiv.show('slow');
+var showRDiv = function(target, HLHeight){ // relateDiv.show(configs["animateDur"]);
 	if (target == null) return;/* target must NOT null, since has been checked outside before this called*/
 	if ($('.hlSupport').attr('id') != target.attr('id') ){
 		$('.hlSupport').hide()
@@ -422,10 +452,10 @@ var showRDiv = function(target, HLHeight){ // relateDiv.show('slow');
 	}
 
 	if (target.attr('location') == 'bottom'){
-		relateDiv.effect('slide', { direction: 'up', mode: 'show' }, 'slow');
+		relateDiv.effect('slide', { direction: 'up', mode: 'show' }, configs["animateDur"]);
 		$('.highlight').height(HLHeight + relateDiv.outerHeight() + parseInt(relateDiv.css('margin-top'), 10)) - 5; // Add height for active bottom
 	} else {
-		relateDiv.effect('slide', { direction: 'left', mode: 'show' }, 'slow');
+		relateDiv.effect('slide', { direction: 'left', mode: 'show' }, configs["animateDur"]);
 	}
 }
 
@@ -433,7 +463,7 @@ var showAbove = function(conHTML, imgURL){
 	$('#above').bPopup({position: ['auto', 'auto'],amsl:0});
 	$('#above').css('visibility','hidden');
 
-	$('#aboveConD').html(conHTML)
+	$('#aboveConD').html(conHTML);
 	$('#aboveImgD').html($('<img/>',{src: imgURL}));
 
 	// var imgMaxH = $('#above').height() - $('#aboveConD').outerHeight(true);//'100%';
@@ -449,7 +479,7 @@ var showAbove = function(conHTML, imgURL){
 		maxH = $('body').height()*0.95;
 	};
 	
-	scale(IMG, maxW, maxH, 1);console.log($('#aboveConD').outerHeight(true));
+	scale(IMG, maxW, maxH, 1);//console.log($('#aboveConD').outerHeight(true));
 	IMG.css('left',   ($('html').width()*0.95 - IMG.width())/2   )
 
 	$('#above').height($('#aboveConD').outerHeight(true)+IMG.height())
@@ -511,9 +541,9 @@ var updateHeadDiv = function(){
 					 temp.children().css('max-width',  availWidth*0.5); // Limit the length
 			availWidth = availWidth - temp.outerWidth()- parseInt(temp.children().css('padding-left'),10);
 
-			temp.effect('slide', { direction: 'left', mode: 'show' }, 'slow');
+			temp.effect('slide', { direction: 'left', mode: 'show' }, configs["animateDur"]);
 		} else {
-			temp.effect('slide', { direction: 'left', mode: 'hide' }, 'slow');
+			temp.effect('slide', { direction: 'left', mode: 'hide' }, configs["animateDur"]);
 		}
 	};
 }
@@ -583,14 +613,15 @@ var triggerAnimate = function(unit,mode){
 			slideUpHeight += shrinkOldHeight-oneLineH;
 
 			// -1- show the detailed of expand
-			expand.nextAll('ol,ul').slideDown('slow');//ol
+			expand.nextAll('ol,ul').slideDown(configs["animateDur"]);//ol
 			
 			// -2- hide the detailed of shrink's previous sibling
-			var slideUP = shrink.parent().prev().children('ul[style!="display: none;"], ol[style!="display: none;"]');	
+			// var slideUP = shrink.parent().prev().children('ul[style!="display: none;"], ol[style!="display: none;"]');
+			var slideUP = shrink.parent().prev().children('ul[style*="display: block;"], ol[style*="display: block;"]');
 			if(slideUP.size() !=0) 
 			{
 				slideUpHeight += slideUP.outerHeight(true);
-				slideUP.slideUp('slow');
+				slideUP.slideUp(configs["animateDur"]);
 				if (slideUP.find('>li>div').last().size()) 
 					slideUpHeight += parseInt(slideUP.find('>li>div').last().css('margin-bottom'));
 			}
@@ -601,7 +632,7 @@ var triggerAnimate = function(unit,mode){
 				if(slideUP.size() !=0) 
 				{
 					slideUpHeight += slideUP.outerHeight(true);
-					slideUP.slideUp('slow');
+					slideUP.slideUp(configs["animateDur"]);
 					if (slideUP.find('>li>div').last().size()) 
 						slideUpHeight += parseInt(slideUP.find('>li>div').last().css('margin-bottom'));
 				}
@@ -609,20 +640,20 @@ var triggerAnimate = function(unit,mode){
 
 		} else if (unit < 0){ // PREV
 			// -3- hide the detailed of shirnk
-			shrink.nextAll('ol,ul').slideUp('slow');//ol
+			shrink.nextAll('ol,ul').slideUp(configs["animateDur"]);//ol
 			
 			if(unit == -1){
 			// -4- show the detailed of expand's previous sibling
-				var slideDown = expand.parent().prev().children('ul[style="display: none;"], ol[style="display: none;"]');
+				var slideDown = expand.parent().prev().children('ul[style*="display: none;"], ol[style*="display: none;"]');
 				if(slideDown.size() !=0) 
 				{
 					slideDownHeight = slideDown.outerHeight(true);
-					slideDown.slideDown('slow');
+					slideDown.slideDown(configs["animateDur"]);
 				}
 
 			} else{// UP
 			// -1- show the detailed of expand
-				expand.nextAll('ol,ul').slideDown('slow');//ol
+				expand.nextAll('ol,ul').slideDown(configs["animateDur"]);//ol
 			}
 		}
 
@@ -651,18 +682,18 @@ var triggerAnimate = function(unit,mode){
 		if(sectionBased!=0){
 			var	hlBackTop = $('.preDiv').height() + sectionBased * expand.parents('.L_1>li').prevAll().size();
 			targetTop += HLBack.position().top - hlBackTop;
-			HLBack.animate({top:hlBackTop}, 'slow');
+			HLBack.animate({top:hlBackTop}, configs["animateDur"]);
 		}			
 
 		setTimeout(function () { 
-		   root.animate({scrollTop:targetTop},'slow');
+		   root.animate({scrollTop:targetTop},configs["animateDur"]);
 		}, time);
 		
 	}
 
 	var updatedCDiv = configWrap(activeTarget);
 	(activeTarget == null) && (relateDiv.css('display') == 'none') ? scroll() 
-			: $('.contentWrap').animate({left:updatedCDiv.left, width:updatedCDiv.width },'slow', function(){
+			: $('.contentWrap').animate({left:updatedCDiv.left, width:updatedCDiv.width },configs["animateDur"], function(){
 				scroll();
 			});
 
@@ -689,7 +720,7 @@ var toggleHide = function(){
 		};
 
 		var updatedCDiv = configWrap(passiveTarget);
-		$('.contentWrap').animate({left:updatedCDiv.left, width:updatedCDiv.width },'slow', function(){
+		$('.contentWrap').animate({left:updatedCDiv.left, width:updatedCDiv.width },configs["animateDur"], function(){
 			var fullH = setHeight(current, "full");
 			
 			/* Update postion of relateDiv and show */
@@ -703,15 +734,6 @@ var toggleHide = function(){
 	};	
 	return passiveTarget;
 }
-
-var main = function(){
-	/* Reorganize & make it scroll*/
-	init();
-
-	setClickHandler();
-};
-
-$(document).ready(main);
 
 /* Event Handlers : Scroll, Click, Keydown*/
 /* Action-scroll */
@@ -786,7 +808,7 @@ $(document).keydown(function(key) {
 				if(expand.parent().parent().css('display') != 'none'){
 					unit = -1;
 				} else{
-					var expandChildren = expand.parents('ul[style="display: none;"], ol[style="display: none;"]').last();
+					var expandChildren = expand.parents('ul[style*="display: none;"], ol[style*="display: none;"]').last();
 					var expandID = parseInt(expandChildren.prev().attr('id').replace("item", ""));
 					unit = expandID-index;
 				}
@@ -806,6 +828,7 @@ $(document).keydown(function(key) {
 				unit = -1-index;
 			}
 			break;
+		case 115:// F4
 		case 39: // Right : +1
 			event.preventDefault();
 			if (index+1<num){
@@ -829,6 +852,7 @@ $(document).keydown(function(key) {
 			break;
 	
 	/* Space key - show or hide .passive */
+		case 112:// F1
 		case 32:// unit == 0; 
 			event.preventDefault();
 			if( toggleHide()) break;
@@ -855,3 +879,32 @@ $(document).keydown(function(key) {
 	// return false; // disable scroll via arrow key
 });
 
+var main = function(){
+	/* update glboal var from user configuration*/
+	if (typeof userConfigure == 'object') { //function
+		for(key in userConfigure){
+			configs[key] = userConfigure[key];
+		}
+
+		/*Support Numerical bullet for .L_1 and .L_2*/
+		if(configs['listStyle']==='num'){
+			$('.L_1').css('list-style-type','decimal');
+			$('.L_2').css('list-style-type','none');
+			$('.L_1>li').each(function(L1index, el) {					
+					$(this).find('.L_2').find('>li>div>p').each(function(L2index, el) {
+						numBullet = L1index+"."+(L2index+1)+". ";
+						$(this).prepend(numBullet);
+						// console.log(L1index+"."+(L2index+1)+". "+$(this).parent().attr('id'));
+					});	
+			});
+		}
+	}
+
+	/* Reorganize & make it scroll*/
+	init();
+
+	setClickHandler();
+
+};
+
+$(document).ready(main);

@@ -1,4 +1,25 @@
 ======
+9.3 Accept global setting from user input
+======
+
+1. global var configs{} : accept global setting from user input
+Accept customer setting on 
+- Customer image size: hasImgCustomer() via id
+- Numerical bullet for .L_1 and .L_2
+
+2. change 'tip:id' to "rtip:id" and "btip:id"
+
+3. More accurate: revise ul/ol[style!="display: none;"] to ul/ol[style*="display: block;"]
+
+5. move main() to the end of CAScroll.js
+
+4. relate Function key to arrow controls
+- F4: right
+- F1: space
+
+
+
+======
 9.2: Support Full display image with content item
 ======
 Two Mode: img.activeFull & img.passiveFull
