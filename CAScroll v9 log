@@ -1,4 +1,21 @@
 ======
+9.3 Accept userFunctions from user.js
+======
+
+1. must load via php:
+	inset to head before setting userConfigure
+	'<script src="user.js" type="text/javascript"></script> '
+
+2. Defined function to object userFunction in user.js 
+- userFunction.beforeInit() will be called before init() and setClickHandler();
+- userFunction.afterInit() will be called after init(), but before return from main() 
+
+3. Add example shown in user.js
+- Insert conver.gif to #title
+- must have image/cover.gif, or userConfigure['coverURL']
+
+
+======
 9.3 Accept global setting from user input
 ======
 

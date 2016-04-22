@@ -900,10 +900,18 @@ var main = function(){
 		}
 	}
 
+	if (typeof userFunction == 'object') { //function
+		userFunction.beforeInit();
+	}
+
 	/* Reorganize & make it scroll*/
 	init();
 
 	setClickHandler();
+
+	if (typeof userFunction == 'object') { //function
+		userFunction.afterInit();
+	}
 
 };
 
