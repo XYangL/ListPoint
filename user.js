@@ -16,9 +16,12 @@ setCover : function(){
 
 	$("#fn\\:img\\:cover").attr('location', 'bottom');
 
-    $('body').trigger(
-        jQuery.Event( 'keydown', { keyCode: 32, which: 32 } )
-    );
+    // $('body').trigger(
+    //     jQuery.Event( 'keydown', { keyCode: 32, which: 32 } )
+    // );
+	setTimeout(function () { 
+		toggleHide();
+	}, 1000);
 },
 
 beforeInit : function(){
