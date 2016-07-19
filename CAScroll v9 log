@@ -1,4 +1,13 @@
 ======
+9.4 Update action related to focus on #title
+======
+- The same version of CAScroll used in phdExam
+- More customer function is added to user.js
+
+- online jQuery referred as locally according to new style_config.son
+
+
+======
 9.3 Accept userFunctions from user.js
 ======
 

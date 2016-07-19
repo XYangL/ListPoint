@@ -356,7 +356,7 @@ var initRDiv = function () {
 
 			} else if ($(this).attr('id').match(/^fn:rtip:/)){
 				$(this).css('max-height', rDivRightValidHeight);
-				$(this).css('width', Math.min($('.container').width()*0.4, rDivRightValidWidth, $(this).width()));
+				$(this).css('width', Math.min($('.container').width()*0.5, rDivRightValidWidth, $(this).width()));
 				$(this).css('height', $(this).height());
 			} else if ($(this).attr('id').match(/^fn:btip:/)){
 				$(this).css('max-height', rDivBottomValidHeight);
@@ -819,6 +819,8 @@ $(document).keydown(function(key) {
 			break;
 		case 38:// Up : <0
 			event.preventDefault();
+			if ($('#title').hasClass('highlight')) break;
+
 			var shrinkParent = divs.eq(index).parents('li').eq(1).children(':first-child');
 			if (shrinkParent.size() ==1) {
 				var expandID = parseInt(shrinkParent.attr('id').replace("item", ""));
@@ -834,8 +836,9 @@ $(document).keydown(function(key) {
 			if (index+1<num){
 				unit = 1;
 			} else{/* When reach last item, then next will be 1st item #item0*/
-				unit = -index;
-				$('.L_1').children().last().children('ul').slideUp();
+				// unit = -index;
+				// $('.L_1').children().last().children('ul').slideUp();
+				$('#title').click();
 			}				
 			break;
 		case 40:// Down : >0 	
